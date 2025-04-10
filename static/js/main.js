@@ -249,28 +249,15 @@ window.onload = function() {
         showElement(errorContainer);
     }
 
-    function updatePreview(iframeElement, htmlContent) {
-        if (!iframeElement || !htmlContent) return;
+    function updatePreview(previewFrame, htmlContent) {
+        if (!previewFrame || !htmlContent) return;
 
         try {
-            // Set iframe src to data URL for proper rendering
             const blob = new Blob([htmlContent], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
-            iframeElement.src = url;
+            previewFrame.src = url;
 
-            // Add rotation class if needed
-            if (iframeElement.classList.contains('rotated')) {
-                iframeElement.style.transform = 'rotate(90deg)';
-                iframeElement.style.width = '100vh';
-                iframeElement.style.height = '100vw';
-            } else {
-                iframeElement.style.transform = '';
-                iframeElement.style.width = '100%';
-                iframeElement.style.height = '100%';
-            }
-
-            // Cleanup URL after iframe loads
-            iframeElement.onload = () => {
+            previewFrame.onload = () => {
                 URL.revokeObjectURL(url);
             };
         } catch (error) {
