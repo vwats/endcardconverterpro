@@ -257,13 +257,38 @@ window.onload = function() {
             const container = document.createElement('div');
             container.innerHTML = htmlContent;
 
-            // Extract the data URL from the HTML content
-            const mediaElement = container.querySelector('#media');
-            const dataUrl = mediaElement ? mediaElement.src : '';
+            // Setup mock MRAID for preview
+            const mraidScript = `
+                <script>
+                if (typeof mraid === 'undefined') {
+                    window.mraid = {
+                        getState: function() { return 'ready'; },
+                        addEventListener: function(event, callback) {
+                            if (event === 'ready') setTimeout(callback, 0);
+                        },
+                        useCustomClose: function() {},
+                        open: function(url) { console.log('Mock MRAID open:', url); }
+                    };
+                }
+                </script>
+            `;
 
-            // Update the preview frame document
-            previewFrame.srcdoc = htmlContent;
-            previewFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups');
+            // Insert MRAID mock before closing head tag
+            const modifiedContent = htmlContent.replace('</head>', mraidScript + '</head>');
+            
+            // Update the preview frame document with all necessary permissions
+            previewFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-presentation');
+            previewFrame.srcdoc = modifiedContent;
+
+            // Handle preview frame load
+            previewFrame.onload = function() {
+                try {
+                    const frameDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+                    console.log('Preview frame loaded');
+                } catch (e) {
+                    console.error('Frame access error:', e);
+                }
+            };
         } catch (error) {
             console.error("Preview update failed:", error);
         }
