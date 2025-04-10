@@ -93,11 +93,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
         currentOrientation = currentOrientation === 'portrait' ? 'landscape' : 'portrait';
 
-        previewContainer.classList.remove(currentOrientation === 'portrait' ? 'landscape-container' : 'portrait-container');
-        previewContainer.classList.add(currentOrientation === 'portrait' ? 'portrait-container' : 'landscape-container');
+        // Update container classes
+        previewContainer.classList.remove('portrait-container', 'landscape-container');
+        previewContainer.classList.add(`${currentOrientation}-container`);
 
-        orientationStatus.textContent = currentOrientation === 'portrait' ? 'Portrait Mode' : 'Landscape Mode';
+        // Update status text
+        orientationStatus.textContent = `${currentOrientation.charAt(0).toUpperCase() + currentOrientation.slice(1)} Mode`;
 
+        // Get the appropriate file input based on orientation
+        const fileInput = currentOrientation === 'portrait' ? portraitFileInput : landscapeFileInput;
+        const file = fileInput.files[0];
+
+        if (file) {
+            const fileURL = URL.createObjectURL(file);
+            const isVideo = file.type.startsWith('video/');
+
+            if (isVideo) {
+                videoPreview.src = fileURL;
+                showElement(videoPreview);
+                hideElement(mediaPreview);
+            } else {
+                mediaPreview.src = fileURL;
+                showElement(mediaPreview);
+                hideElement(videoPreview);
+            }
+        }
+
+        // Update HTML content
         const htmlContent = currentOrientation === 'portrait' ? portraitHtml : landscapeHtml;
         updatePreview(endcardPreview, htmlContent);
     }
