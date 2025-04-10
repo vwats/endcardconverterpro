@@ -141,8 +141,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 updatePreview(landscapePreview, landscapeHTML);
             }
             
-            // Show results
+            // Show results and scroll to them
             showElement(resultsContainer);
+            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
         })
         .catch(error => {
             hideElement(loadingIndicator);
