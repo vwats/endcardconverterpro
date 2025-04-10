@@ -274,8 +274,18 @@ window.onload = function() {
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' blob: data:;">
                     <script>
+                    // MRAID Debug Script
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const testElement = document.createElement('div');
+                        testElement.textContent = 'DOM Loaded';
+                        testElement.style.cssText = 'color:red; position:fixed; top:10px; left:10px; z-index:9999;';
+                        document.body.prepend(testElement);
+
+                        console.assert(window.mraid, 'MRAID Missing!');
+                        console.log('MRAID State:', JSON.stringify(window.mraid, null, 2));
+                    });
+
                     // Direct window mutation for MRAID mock
                     window.mraid = {
                         state: 'ready',
@@ -304,7 +314,7 @@ window.onload = function() {
                             return {width: window.innerWidth, height: window.innerHeight};
                         }
                     };
-                    
+
                     // Dispatch mraidready event
                     window.addEventListener('DOMContentLoaded', function() {
                         console.log('[MRAID] DOM Ready, dispatching mraidready');
@@ -327,12 +337,12 @@ window.onload = function() {
 
             // Set up preview frame with all necessary permissions
             previewFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-presentation allow-forms allow-modals');
-            
+
             // Create blob URL with error handling
             try {
                 const blob = new Blob([baseHTML], {type: 'text/html;charset=utf-8'});
                 const blobUrl = URL.createObjectURL(blob);
-                
+
                 previewFrame.onload = () => {
                     try {
                         console.log('[Preview] Frame loaded');
@@ -351,11 +361,11 @@ window.onload = function() {
                         console.error('[Preview] Frame load error:', loadError);
                     }
                 };
-                
+
                 previewFrame.onerror = (error) => {
                     console.error('[Preview] Frame error:', error);
                 };
-                
+
                 previewFrame.src = blobUrl;
             } catch (blobError) {
                 console.error('[Preview] Blob creation error:', blobError);
