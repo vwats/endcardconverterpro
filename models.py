@@ -8,6 +8,13 @@ class Base(DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 
+class User(db.Model):
+    """Model for storing user data"""
+    id = db.Column(db.Integer, primary_key=True)
+    replit_id = db.Column(db.String(255), unique=True)
+    credits = db.Column(db.Integer, default=1)  # New users get 1 free credit
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 class Endcard(db.Model):
     """Model for storing endcard conversion records"""
     id = db.Column(db.Integer, primary_key=True)

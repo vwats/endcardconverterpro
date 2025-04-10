@@ -72,6 +72,21 @@ def upgrade():
 @app.route('/upload/combined', methods=['POST'])
 def upload_combined():
     """Handle combined file upload for both portrait and landscape orientations"""
+    # Check if user is logged in and has credits
+    replit_user_id = request.headers.get('X-Replit-User-Id')
+    if not replit_user_id:
+        return jsonify({'error': 'Please login to use this service'}), 401
+        
+    user = User.query.filter_by(replit_id=replit_user_id).first()
+    if not user:
+        # Create new user with 1 free credit
+        user = User(replit_id=replit_user_id)
+        db.session.add(user)
+        db.session.commit()
+    
+    if user.credits <= 0:
+        return jsonify({'error': 'No credits remaining. Please upgrade to continue using the service.'}), 402
+        
     portrait_html = None
     landscape_html = None
     portrait_file_info = None
@@ -214,6 +229,10 @@ def upload_combined():
     # Check if at least one file was processed
     if not portrait_html and not landscape_html:
         return jsonify({'error': 'No files were provided for conversion'}), 400
+        
+    # Deduct credit after successful conversion
+    user.credits -= 1
+    db.session.commit()
     
     # Return the HTML content and file info
     response = {
