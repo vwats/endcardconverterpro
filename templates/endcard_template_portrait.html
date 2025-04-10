@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,7 +34,7 @@
         function handleClick() {
             if (typeof mraid !== 'undefined') {
                 mraid.expand();
-                mraid.open('https://p.applov.in/playablePreview?create=1&qr=1');
+                mraid.open(window.mraidRedirectUrl || 'store://');
             }
         }
 
