@@ -20,234 +20,56 @@
             height: 100%;
             cursor: pointer;
             background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
-        #media-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.3s ease;
         }
         #media {
-            max-width: 100%;
-            max-height: 100%;
+            width: 100%;
+            height: 100%;
             object-fit: contain;
-            transition: transform 0.3s ease;
-        }
-        
-        /* Portrait Mode (9:16) */
-        .portrait-mode #media-container {
-            width: 100%;
-            height: 100%;
-        }
-        .portrait-mode #media {
-            transform: rotate(0deg);
-        }
-        
-        /* Landscape Mode (16:9) */
-        .landscape-mode #media-container {
-            width: 100%;
-            height: 100%;
-        }
-        .landscape-mode #media {
-            transform: rotate(90deg) scale(1.7); /* Scale up to fit better in landscape mode */
-            transform-origin: center center;
-            max-width: none; 
-            max-height: none;
-        }
-        
-        /* For videos in landscape mode, we need special handling */
-        .landscape-mode video#media {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(90deg) scale(1.5);
-        }
-        
-        /* Controls for preview only - hidden in production */
-        #orientation-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 5px;
-            padding: 5px;
-            display: none; /* Hidden by default */
-        }
-        #orientation-toggle {
-            background: #4A6EE0;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        /* Hide controls in production */
-        .production-mode #orientation-controls {
-            display: none !important;
         }
     </style>
 </head>
-<body class="portrait-mode">
-    <!-- Orientation Controls (for preview only) -->
-    <div id="orientation-controls">
-        <button id="orientation-toggle">Rotate</button>
-    </div>
-    
+<body>
     <div id="content">
-        <div id="media-container">
-            {% if is_video %}
-                <video id="media" src="{{ data_url }}" playsinline autoplay loop muted></video>
-            {% else %}
-                <img id="media" src="{{ data_url }}" alt="Endcard">
-            {% endif %}
-        </div>
+        {% if is_video %}
+            <video id="media" src="{{ data_url }}" playsinline autoplay loop muted></video>
+        {% else %}
+            <img id="media" src="{{ data_url }}" alt="Endcard">
+        {% endif %}
     </div>
-    
     <script>
         (function() {
             var content = document.getElementById('content');
-            var mediaContainer = document.getElementById('media-container');
             var media = document.getElementById('media');
-            var orientationControls = document.getElementById('orientation-controls');
-            var orientationToggle = document.getElementById('orientation-toggle');
-            var isProduction = true; // Set to false for preview mode with controls
-            
-            function toggleOrientation() {
-                var body = document.body;
-                if (body.classList.contains('portrait-mode')) {
-                    // Switch to landscape mode
-                    body.classList.remove('portrait-mode');
-                    body.classList.add('landscape-mode');
-                    
-                    // Update the rotation button text
-                    var rotateBtn = document.getElementById('rotate-btn');
-                    if (rotateBtn) {
-                        rotateBtn.textContent = 'Portrait';
-                    }
-                    
-                    // Adjust media dimensions
-                    if (media) {
-                        // Force repaint to ensure smooth transition
-                        media.style.display = 'none';
-                        setTimeout(function() {
-                            media.style.display = '';
-                        }, 10);
-                    }
-                } else {
-                    // Switch to portrait mode
-                    body.classList.remove('landscape-mode');
-                    body.classList.add('portrait-mode');
-                    
-                    // Update the rotation button text
-                    var rotateBtn = document.getElementById('rotate-btn');
-                    if (rotateBtn) {
-                        rotateBtn.textContent = 'Landscape';
-                    }
-                    
-                    // Adjust media dimensions
-                    if (media) {
-                        // Force repaint to ensure smooth transition
-                        media.style.display = 'none';
-                        setTimeout(function() {
-                            media.style.display = '';
-                        }, 10);
-                    }
-                }
-            }
-            
+
             function handleClick(e) {
-                // Prevent default behavior only on production
-                if (isProduction) {
-                    e.preventDefault();
-                    if (typeof mraid !== 'undefined') {
-                        mraid.open(window.mraidRedirectUrl || 'store://details');
-                    }
+                e.preventDefault();
+                if (typeof mraid !== 'undefined') {
+                    mraid.open(window.mraidRedirectUrl || 'store://details');
                 }
             }
-            
+
             function handleOrientation() {
                 var isPortrait = window.innerHeight > window.innerWidth;
-                // Auto-adjust for device orientation in production mode
-                if (isProduction && typeof mraid !== 'undefined') {
-                    if (isPortrait) {
-                        document.body.classList.add('portrait-mode');
-                        document.body.classList.remove('landscape-mode');
-                    } else {
-                        document.body.classList.add('landscape-mode');
-                        document.body.classList.remove('portrait-mode');
-                    }
-                }
+                media.style.objectFit = isPortrait ? 'contain' : 'contain';
             }
-            
+
             function initAd() {
-                // MRAID initialization
                 if (typeof mraid !== 'undefined') {
                     mraid.useCustomClose(true);
                 }
-                
-                // In preview mode, show orientation controls
-                if (!isProduction) {
-                    document.body.classList.remove('production-mode');
-                    orientationControls.style.display = 'block';
-                    // Add click event for orientation toggle button
-                    orientationToggle.addEventListener('click', function(e) {
-                        e.stopPropagation(); // Prevent the content click handler
-                        toggleOrientation();
-                    });
-                }
-                
-                // Create a rotate button for iframe preview
-                var rotateBtn = document.createElement('button');
-                rotateBtn.id = 'rotate-btn';
-                rotateBtn.textContent = document.body.classList.contains('portrait-mode') ? 'Landscape' : 'Portrait';
-                rotateBtn.style.position = 'absolute';
-                rotateBtn.style.top = '10px';
-                rotateBtn.style.right = '10px';
-                rotateBtn.style.padding = '5px 10px';
-                rotateBtn.style.background = '#4A6EE0';
-                rotateBtn.style.color = 'white';
-                rotateBtn.style.border = 'none';
-                rotateBtn.style.borderRadius = '4px';
-                rotateBtn.style.cursor = 'pointer';
-                rotateBtn.style.zIndex = '9999';
-                
-                rotateBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    toggleOrientation();
-                });
-                
-                document.body.appendChild(rotateBtn);
-                
-                // Add click handlers for the content
                 content.addEventListener('click', handleClick);
                 content.addEventListener('touchend', handleClick);
-                
-                // Listen for orientation changes in production
-                if (isProduction) {
-                    window.addEventListener('resize', handleOrientation);
-                    handleOrientation();
-                }
+                window.addEventListener('resize', handleOrientation);
+                handleOrientation();
             }
-            
-            // Initialize based on MRAID state
+
             if (typeof mraid !== 'undefined') {
-                isProduction = true; // In MRAID environment, always production mode
                 if (mraid.getState() === 'loading') {
                     mraid.addEventListener('ready', initAd);
                 } else {
                     initAd();
                 }
             } else {
-                isProduction = false; // In browser preview, enable controls
                 initAd();
             }
         })();
