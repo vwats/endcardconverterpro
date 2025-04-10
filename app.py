@@ -3,7 +3,16 @@ import logging
 import uuid
 from flask import Flask, request, render_template, send_file, jsonify, flash, redirect, url_for
 from werkzeug.utils import secure_filename
+from functools import wraps
 import io
+
+def no_size_limit(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if request.content_length and request.content_length > app.config['MAX_CONTENT_LENGTH']:
+            request.content_length = None
+        return f(*args, **kwargs)
+    return wrapper
 from utils.endcard_converter import convert_to_endcard
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -263,6 +272,7 @@ def upload_combined():
     return jsonify(response)
 
 @app.route('/download/<orientation>/<filename>', methods=['POST'])
+@no_size_limit
 def download_endcard(orientation, filename):
     if orientation not in ['portrait', 'landscape']:
         return jsonify({'error': 'Invalid orientation'}), 400

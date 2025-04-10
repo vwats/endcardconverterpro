@@ -219,12 +219,20 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Download failed');
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Download failed');
+                });
             }
-            return response.text();
+            return response.blob();
         })
-        .then(html => {
-            const blob = new Blob([html], {type: 'text/html'});
+        .then(blob => {
+            if (blob.type !== 'text/html') {
+                const newBlob = new Blob([blob], {type: 'text/html'});
+                return newBlob;
+            }
+            return blob;
+        })
+        .then(blob => {
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
