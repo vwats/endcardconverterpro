@@ -19,13 +19,24 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: url("{{ data_url }}") center center / contain no-repeat;
             cursor: pointer;
+            background-color: #000;
+        }
+        #media {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
     </style>
 </head>
 <body>
-    <div id="content"></div>
+    <div id="content">
+        {% if is_video %}
+            <video id="media" src="{{ data_url }}" playsinline autoplay loop muted></video>
+        {% else %}
+            <img id="media" src="{{ data_url }}" alt="Endcard">
+        {% endif %}
+    </div>
     <script>
         (function() {
             var content = document.getElementById('content');
