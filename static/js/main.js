@@ -87,6 +87,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Store URLs for both orientations
+    let portraitURL = '';
+    let landscapeURL = '';
+    let portraitIsVideo = false;
+    let landscapeIsVideo = false;
+
     // Toggle orientation function
     function toggleOrientation() {
         if (!previewContainer || !orientationStatus) return;
@@ -100,34 +106,78 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update status text
         orientationStatus.textContent = `${currentOrientation.charAt(0).toUpperCase() + currentOrientation.slice(1)} Mode`;
 
-        // Get the appropriate file input based on orientation
-        const fileInput = currentOrientation === 'portrait' ? portraitFileInput : landscapeFileInput;
-        const file = fileInput.files[0];
-
-        if (file) {
-            URL.revokeObjectURL(mediaPreview.src); // Clean up old URL
-            URL.revokeObjectURL(videoPreview.src);
-            
-            const fileURL = URL.createObjectURL(file);
-            const isVideo = file.type.startsWith('video/');
-
-            if (isVideo) {
-                videoPreview.src = fileURL;
+        // Switch between stored URLs
+        if (currentOrientation === 'portrait') {
+            if (portraitIsVideo) {
+                videoPreview.src = portraitURL;
                 videoPreview.style.display = 'block';
                 mediaPreview.style.display = 'none';
             } else {
-                mediaPreview.src = fileURL;
+                mediaPreview.src = portraitURL;
+                mediaPreview.style.display = 'block';
+                videoPreview.style.display = 'none';
+            }
+        } else {
+            if (landscapeIsVideo) {
+                videoPreview.src = landscapeURL;
+                videoPreview.style.display = 'block';
+                mediaPreview.style.display = 'none';
+            } else {
+                mediaPreview.src = landscapeURL;
                 mediaPreview.style.display = 'block';
                 videoPreview.style.display = 'none';
             }
         }
 
-        // Update HTML content with proper orientation
+        // Update HTML content
         const htmlContent = currentOrientation === 'portrait' ? portraitHtml : landscapeHtml;
         if (endcardPreview) {
             updatePreview(endcardPreview, htmlContent);
         }
     }
+
+    // Update file input change handlers
+    [portraitFileInput, landscapeFileInput].forEach(input => {
+        input.addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (!file) return;
+
+            const isVideo = file.type.startsWith('video/');
+            const fileURL = URL.createObjectURL(file);
+
+            if (this === portraitFileInput) {
+                if (portraitURL) URL.revokeObjectURL(portraitURL);
+                portraitURL = fileURL;
+                portraitIsVideo = isVideo;
+            } else {
+                if (landscapeURL) URL.revokeObjectURL(landscapeURL);
+                landscapeURL = fileURL;
+                landscapeIsVideo = isVideo;
+            }
+
+            // Update current preview
+            if ((this === portraitFileInput && currentOrientation === 'portrait') ||
+                (this === landscapeFileInput && currentOrientation === 'landscape')) {
+                if (isVideo) {
+                    videoPreview.src = fileURL;
+                    videoPreview.style.display = 'block';
+                    mediaPreview.style.display = 'none';
+                } else {
+                    mediaPreview.src = fileURL;
+                    mediaPreview.style.display = 'block';
+                    videoPreview.style.display = 'none';
+                }
+            }
+
+            showElement(previewArea);
+
+            if (portraitFileInput.files[0] && landscapeFileInput.files[0]) {
+                enableElement(combinedUploadBtn);
+            } else {
+                disableElement(combinedUploadBtn);
+            }
+        });
+    });
 
     // Form submission handler
     combinedUploadForm.addEventListener('submit', function(e) {
