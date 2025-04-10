@@ -40,6 +40,7 @@
     <script>
         (function() {
             var content = document.getElementById('content');
+            var media = document.getElementById('media');
             
             function handleClick(e) {
                 e.preventDefault();
@@ -48,12 +49,19 @@
                 }
             }
 
+            function handleOrientation() {
+                var isPortrait = window.innerHeight > window.innerWidth;
+                media.style.objectFit = isPortrait ? 'contain' : 'contain';
+            }
+
             function initAd() {
                 if (typeof mraid !== 'undefined') {
                     mraid.useCustomClose(true);
                 }
                 content.addEventListener('click', handleClick);
                 content.addEventListener('touchend', handleClick);
+                window.addEventListener('resize', handleOrientation);
+                handleOrientation();
             }
 
             if (typeof mraid !== 'undefined') {
