@@ -63,6 +63,11 @@ def history():
     endcards = Endcard.query.order_by(Endcard.created_at.desc()).all()
     return render_template('history.html', endcards=endcards)
 
+@app.route('/upgrade')
+def upgrade():
+    """Display the upgrade page for premium features"""
+    return render_template('upgrade.html')
+
 @app.route('/upload/combined', methods=['POST'])
 def upload_combined():
     """Handle combined file upload for both portrait and landscape orientations"""
