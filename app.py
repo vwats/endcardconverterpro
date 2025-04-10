@@ -80,7 +80,7 @@ def upgrade():
 
 @app.route('/upload/combined', methods=['POST'])
 def upload_combined():
-    """Handle combined file upload for both portrait and landscape orientations"""
+    """Handle file upload for rotatable HTML endcard"""
     # Skip login check if in development mode
     if not os.environ.get('PRODUCTION'):
         user = User.query.first()
@@ -103,11 +103,9 @@ def upload_combined():
         
         if user.credits <= 0:
             return jsonify({'error': 'No credits remaining. Please upgrade to continue using the service.'}), 402
-        
-    portrait_html = None
-    landscape_html = None
-    portrait_file_info = None
-    landscape_file_info = None
+    
+    rotatable_html = None
+    file_info = None
     
     # Check for existing endcard ID
     endcard_id = request.form.get('endcard_id')
@@ -124,128 +122,80 @@ def upload_combined():
         db.session.add(endcard)
         db.session.commit()
     
-    # Process portrait file if provided
-    if 'portrait_file' in request.files:
-        portrait_file = request.files['portrait_file']
-        
-        if portrait_file and portrait_file.filename != '':
-            # Validate file type
-            if not allowed_file(portrait_file.filename):
-                return jsonify({'error': f'Invalid portrait file type. Allowed types: {", ".join(ALLOWED_EXTENSIONS)}'}), 400
+    # Process the uploaded file (we only need one file now)
+    for field_name in ['media_file', 'portrait_file', 'landscape_file']:  # Support multiple field names for compatibility
+        if field_name in request.files:
+            uploaded_file = request.files[field_name]
             
-            try:
-                # Check file size before saving
-                portrait_file.seek(0, os.SEEK_END)
-                portrait_size = portrait_file.tell()
-                portrait_file.seek(0)  # Reset file pointer
+            if uploaded_file and uploaded_file.filename != '':
+                # Validate file type
+                if not allowed_file(uploaded_file.filename):
+                    return jsonify({'error': f'Invalid file type. Allowed types: {", ".join(ALLOWED_EXTENSIONS)}'}), 400
                 
-                if portrait_size > MAX_FILE_SIZE:
-                    return jsonify({'error': f'Portrait file exceeds the 2.2MB size limit (size: {portrait_size/1024/1024:.2f}MB)'}), 400
-                
-                # Generate a unique ID for this upload
-                upload_id = str(uuid.uuid4())
-                
-                # Save the file temporarily
-                portrait_filename = secure_filename(portrait_file.filename)
-                portrait_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{upload_id}_{portrait_filename}")
-                portrait_file.save(portrait_path)
-                
-                logger.debug(f"Portrait file saved at {portrait_path}")
-                
-                # Determine file type (image or video)
-                portrait_extension = os.path.splitext(portrait_filename)[1].lower()
-                portrait_type = 'video' if portrait_extension == '.mp4' else 'image'
-                
-                # Generate portrait endcard
-                portrait_html = convert_to_endcard(portrait_path, portrait_filename, orientation='portrait')
-                
-                # Update endcard record with portrait info
-                endcard.portrait_filename = portrait_filename
-                endcard.portrait_file_type = portrait_type
-                endcard.portrait_file_size = portrait_size
-                endcard.portrait_created = True
-                
-                # Store portrait info for response
-                portrait_file_info = {
-                    'filename': portrait_filename,
-                    'type': portrait_type,
-                    'size': portrait_size
-                }
-                
-                # Clean up temporary file
                 try:
-                    os.remove(portrait_path)
+                    # Check file size before saving
+                    uploaded_file.seek(0, os.SEEK_END)
+                    file_size = uploaded_file.tell()
+                    uploaded_file.seek(0)  # Reset file pointer
+                    
+                    if file_size > MAX_FILE_SIZE:
+                        return jsonify({'error': f'File exceeds the 2.2MB size limit (size: {file_size/1024/1024:.2f}MB)'}), 400
+                    
+                    # Generate a unique ID for this upload
+                    upload_id = str(uuid.uuid4())
+                    
+                    # Save the file temporarily
+                    filename = secure_filename(uploaded_file.filename)
+                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{upload_id}_{filename}")
+                    uploaded_file.save(file_path)
+                    
+                    logger.debug(f"File saved at {file_path}")
+                    
+                    # Determine file type (image or video)
+                    extension = os.path.splitext(filename)[1].lower()
+                    file_type = 'video' if extension == '.mp4' else 'image'
+                    
+                    # Generate rotatable endcard
+                    rotatable_html = convert_to_endcard(file_path, filename, orientation='rotatable')
+                    
+                    # Update endcard record - store in portrait fields for backward compatibility
+                    endcard.portrait_filename = filename
+                    endcard.portrait_file_type = file_type
+                    endcard.portrait_file_size = file_size
+                    endcard.portrait_created = True
+                    
+                    # Also update landscape fields for compatibility with history view
+                    endcard.landscape_filename = filename
+                    endcard.landscape_file_type = file_type
+                    endcard.landscape_file_size = file_size
+                    endcard.landscape_created = True
+                    
+                    # Store file info for response
+                    file_info = {
+                        'filename': filename,
+                        'type': file_type,
+                        'size': file_size
+                    }
+                    
+                    # Clean up temporary file
+                    try:
+                        os.remove(file_path)
+                    except Exception as e:
+                        logger.error(f"Error removing temporary file: {e}")
+                    
+                    # We found a file, no need to check other field names
+                    break
+                    
                 except Exception as e:
-                    logger.error(f"Error removing temporary portrait file: {e}")
-                
-            except Exception as e:
-                logger.error(f"Error processing portrait file: {e}")
-                return jsonify({'error': f'Error processing portrait file: {str(e)}'}), 500
-    
-    # Process landscape file if provided
-    if 'landscape_file' in request.files:
-        landscape_file = request.files['landscape_file']
-        
-        if landscape_file and landscape_file.filename != '':
-            # Validate file type
-            if not allowed_file(landscape_file.filename):
-                return jsonify({'error': f'Invalid landscape file type. Allowed types: {", ".join(ALLOWED_EXTENSIONS)}'}), 400
-            
-            try:
-                # Check file size before saving
-                landscape_file.seek(0, os.SEEK_END)
-                landscape_size = landscape_file.tell()
-                landscape_file.seek(0)  # Reset file pointer
-                
-                if landscape_size > MAX_FILE_SIZE:
-                    return jsonify({'error': f'Landscape file exceeds the 2.2MB size limit (size: {landscape_size/1024/1024:.2f}MB)'}), 400
-                
-                # Generate a unique ID for this upload
-                upload_id = str(uuid.uuid4())
-                
-                # Save the file temporarily
-                landscape_filename = secure_filename(landscape_file.filename)
-                landscape_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{upload_id}_{landscape_filename}")
-                landscape_file.save(landscape_path)
-                
-                logger.debug(f"Landscape file saved at {landscape_path}")
-                
-                # Determine file type (image or video)
-                landscape_extension = os.path.splitext(landscape_filename)[1].lower()
-                landscape_type = 'video' if landscape_extension == '.mp4' else 'image'
-                
-                # Generate landscape endcard
-                landscape_html = convert_to_endcard(landscape_path, landscape_filename, orientation='landscape')
-                
-                # Update endcard record with landscape info
-                endcard.landscape_filename = landscape_filename
-                endcard.landscape_file_type = landscape_type
-                endcard.landscape_file_size = landscape_size
-                endcard.landscape_created = True
-                
-                # Store landscape info for response
-                landscape_file_info = {
-                    'filename': landscape_filename,
-                    'type': landscape_type,
-                    'size': landscape_size
-                }
-                
-                # Clean up temporary file
-                try:
-                    os.remove(landscape_path)
-                except Exception as e:
-                    logger.error(f"Error removing temporary landscape file: {e}")
-                
-            except Exception as e:
-                logger.error(f"Error processing landscape file: {e}")
-                return jsonify({'error': f'Error processing landscape file: {str(e)}'}), 500
+                    logger.error(f"Error processing file: {e}")
+                    return jsonify({'error': f'Error processing file: {str(e)}'}), 500
     
     # Save the updated endcard record
     db.session.commit()
     
-    # Check if at least one file was processed
-    if not portrait_html and not landscape_html:
-        return jsonify({'error': 'No files were provided for conversion'}), 400
+    # Check if a file was processed
+    if not rotatable_html:
+        return jsonify({'error': 'No file was provided for conversion'}), 400
         
     # Deduct credit after successful conversion
     user.credits -= 1
@@ -253,28 +203,24 @@ def upload_combined():
     
     # Return the HTML content and file info
     response = {
-        'endcard_id': endcard.id
+        'endcard_id': endcard.id,
+        'html': str(rotatable_html),
+        'file_info': file_info
     }
     
-    if portrait_html:
-        response['portrait'] = portrait_html
-        response['portrait_info'] = portrait_file_info
+    # For backward compatibility
+    response['portrait'] = str(rotatable_html)
+    response['portrait_info'] = file_info
+    response['landscape'] = str(rotatable_html)
+    response['landscape_info'] = file_info
     
-    if landscape_html:
-        response['landscape'] = landscape_html
-        response['landscape_info'] = landscape_file_info
-    
-    # Convert HTML content to a safe JSON format
-    if portrait_html:
-        response['portrait'] = str(portrait_html)
-    if landscape_html:
-        response['landscape'] = str(landscape_html)
     return jsonify(response)
 
 @app.route('/download/<orientation>/<filename>', methods=['POST'])
 @no_size_limit
 def download_endcard(orientation, filename):
-    if orientation not in ['portrait', 'landscape']:
+    # Allow 'rotatable' in addition to portrait and landscape
+    if orientation not in ['portrait', 'landscape', 'rotatable']:
         return jsonify({'error': 'Invalid orientation'}), 400
     
     html_content = request.form.get('html')
@@ -283,7 +229,12 @@ def download_endcard(orientation, filename):
     
     try:
         base_filename = secure_filename(filename.rsplit('.', 1)[0])
-        output_filename = f"{base_filename}_{orientation}.html"
+        
+        # Use 'endcard' as the suffix for rotatable HTML files
+        if orientation == 'rotatable':
+            output_filename = f"{base_filename}_endcard.html"
+        else:
+            output_filename = f"{base_filename}_{orientation}.html"
         
         encoded_content = html_content.encode('utf-8')
         buffer = io.BytesIO(encoded_content)

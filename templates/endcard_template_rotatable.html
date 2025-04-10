@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MRAID Rotatable Endcard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+        }
+        #content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        #media-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+        #media {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        /* Default Portrait Mode (9:16) */
+        .portrait-mode #media-container {
+            transform: rotate(0deg);
+        }
+        /* Landscape Mode (16:9) */
+        .landscape-mode #media-container {
+            transform: rotate(90deg);
+        }
+        /* Controls for preview only - hidden in production */
+        #orientation-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            padding: 5px;
+            display: none; /* Hidden by default */
+        }
+        #orientation-toggle {
+            background: #4A6EE0;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        /* Hide controls in production */
+        .production-mode #orientation-controls {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="portrait-mode">
+    <!-- Orientation Controls (for preview only) -->
+    <div id="orientation-controls">
+        <button id="orientation-toggle">Rotate</button>
+    </div>
+    
+    <div id="content">
+        <div id="media-container">
+            {% if is_video %}
+                <video id="media" src="{{ data_url }}" playsinline autoplay loop muted></video>
+            {% else %}
+                <img id="media" src="{{ data_url }}" alt="Endcard">
+            {% endif %}
+        </div>
+    </div>
+    
+    <script>
+        (function() {
+            var content = document.getElementById('content');
+            var mediaContainer = document.getElementById('media-container');
+            var media = document.getElementById('media');
+            var orientationControls = document.getElementById('orientation-controls');
+            var orientationToggle = document.getElementById('orientation-toggle');
+            var isProduction = true; // Set to false for preview mode with controls
+            
+            function toggleOrientation() {
+                var body = document.body;
+                if (body.classList.contains('portrait-mode')) {
+                    body.classList.remove('portrait-mode');
+                    body.classList.add('landscape-mode');
+                } else {
+                    body.classList.remove('landscape-mode');
+                    body.classList.add('portrait-mode');
+                }
+            }
+            
+            function handleClick(e) {
+                // Prevent default behavior only on production
+                if (isProduction) {
+                    e.preventDefault();
+                    if (typeof mraid !== 'undefined') {
+                        mraid.open(window.mraidRedirectUrl || 'store://details');
+                    }
+                }
+            }
+            
+            function handleOrientation() {
+                var isPortrait = window.innerHeight > window.innerWidth;
+                // Auto-adjust for device orientation in production mode
+                if (isProduction && typeof mraid !== 'undefined') {
+                    if (isPortrait) {
+                        document.body.classList.add('portrait-mode');
+                        document.body.classList.remove('landscape-mode');
+                    } else {
+                        document.body.classList.add('landscape-mode');
+                        document.body.classList.remove('portrait-mode');
+                    }
+                }
+            }
+            
+            function initAd() {
+                // MRAID initialization
+                if (typeof mraid !== 'undefined') {
+                    mraid.useCustomClose(true);
+                }
+                
+                // In preview mode, show orientation controls
+                if (!isProduction) {
+                    document.body.classList.remove('production-mode');
+                    orientationControls.style.display = 'block';
+                    // Add click event for orientation toggle button
+                    orientationToggle.addEventListener('click', function(e) {
+                        e.stopPropagation(); // Prevent the content click handler
+                        toggleOrientation();
+                    });
+                }
+                
+                // Add click handlers for the content
+                content.addEventListener('click', handleClick);
+                content.addEventListener('touchend', handleClick);
+                
+                // Listen for orientation changes in production
+                if (isProduction) {
+                    window.addEventListener('resize', handleOrientation);
+                    handleOrientation();
+                }
+            }
+            
+            // Initialize based on MRAID state
+            if (typeof mraid !== 'undefined') {
+                isProduction = true; // In MRAID environment, always production mode
+                if (mraid.getState() === 'loading') {
+                    mraid.addEventListener('ready', initAd);
+                } else {
+                    initAd();
+                }
+            } else {
+                isProduction = false; // In browser preview, enable controls
+                initAd();
+            }
+        })();
+    </script>
+</body>
+</html>
