@@ -33,49 +33,45 @@
                 <!-- Hidden endcard ID field for editing existing records -->
                 <input type="hidden" id="endcard-id" value="">
                 
-                <div class="row">
-                    <div class="col-md-6 mb-4">
-                        <!-- Portrait File Upload Form -->
-                        <div class="card h-100">
-                            <div class="card-header">
-                                <h5 class="mb-0"><i class="fas fa-mobile-alt me-2"></i>Portrait Endcard (9:16)</h5>
-                            </div>
-                            <div class="card-body">
-                                <form id="portrait-upload-form" class="mb-3">
+                <!-- Combined Upload Form -->
+                <form id="combined-upload-form" class="mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-upload me-2"></i>Upload Media Files</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <!-- Portrait File Upload -->
                                     <div class="mb-3">
-                                        <label for="portrait-file-input" class="form-label">Select portrait media (Max: 2.2MB)</label>
+                                        <label for="portrait-file-input" class="form-label">
+                                            <i class="fas fa-mobile-alt me-2"></i>Portrait Media (9:16)
+                                        </label>
                                         <input type="file" class="form-control" id="portrait-file-input" accept=".jpg,.jpeg,.png,.mp4">
-                                        <div class="form-text">Supported formats: JPEG, PNG, MP4</div>
+                                        <div class="form-text">Max: 2.2MB | Formats: JPEG, PNG, MP4</div>
                                     </div>
-                                    <button type="submit" class="btn btn-primary" id="portrait-upload-btn">
-                                        <i class="fas fa-upload me-2"></i>Upload Portrait
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6 mb-4">
-                        <!-- Landscape File Upload Form -->
-                        <div class="card h-100">
-                            <div class="card-header">
-                                <h5 class="mb-0"><i class="fas fa-desktop me-2"></i>Landscape Endcard (16:9)</h5>
-                            </div>
-                            <div class="card-body">
-                                <form id="landscape-upload-form" class="mb-3">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <!-- Landscape File Upload -->
                                     <div class="mb-3">
-                                        <label for="landscape-file-input" class="form-label">Select landscape media (Max: 2.2MB)</label>
+                                        <label for="landscape-file-input" class="form-label">
+                                            <i class="fas fa-desktop me-2"></i>Landscape Media (16:9)
+                                        </label>
                                         <input type="file" class="form-control" id="landscape-file-input" accept=".jpg,.jpeg,.png,.mp4">
-                                        <div class="form-text">Supported formats: JPEG, PNG, MP4</div>
+                                        <div class="form-text">Max: 2.2MB | Formats: JPEG, PNG, MP4</div>
                                     </div>
-                                    <button type="submit" class="btn btn-primary" id="landscape-upload-btn">
-                                        <i class="fas fa-upload me-2"></i>Upload Landscape
-                                    </button>
-                                </form>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 col-md-6 mx-auto mt-3">
+                                <button type="submit" class="btn btn-primary" id="combined-upload-btn">
+                                    <i class="fas fa-sync me-2"></i>Convert Files
+                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
+                </form>
                 
                 <div class="card bg-dark mb-3">
                     <div class="card-body">
