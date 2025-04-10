@@ -252,18 +252,40 @@ window.onload = function() {
     function updatePreview(iframeElement, htmlContent) {
         if (!iframeElement || !htmlContent) return;
 
-        // Create a blob URL for the HTML content
-        const blob = new Blob([htmlContent], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
+        // Get the iframe document
+        const iframeDoc = iframeElement.contentDocument || iframeElement.contentWindow.document;
         
-        // Set iframe src to the blob URL
-        iframeElement.src = url;
-        
-        // Clean up the blob URL after a delay to ensure it loads
-        setTimeout(() => {
-            URL.revokeObjectURL(url);
-        }, 1000);
-}
+        // Clear existing content
+        iframeDoc.open();
+        iframeDoc.write(htmlContent);
+        iframeDoc.close();
+
+        // Add necessary styles to make content visible
+        const style = iframeDoc.createElement('style');
+        style.textContent = `
+            body { 
+                margin: 0; 
+                padding: 0; 
+                width: 100%; 
+                height: 100vh; 
+                background: #000; 
+            }
+            #content {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            #media {
+                max-width: 100%;
+                max-height: 100%;
+                width: auto;
+                height: auto;
+            }
+        `;
+        iframeDoc.head.appendChild(style);
+    }
 
     function downloadHTML(orientation, filename, htmlContent) {
         if (!filename || !htmlContent) return;
