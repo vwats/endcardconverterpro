@@ -286,14 +286,19 @@ def download_endcard(orientation, filename):
         output_filename = f"{base_filename}_{orientation}.html"
         
         encoded_content = html_content.encode('utf-8')
+        buffer = io.BytesIO(encoded_content)
+        buffer.seek(0)
+        
         response = send_file(
-            io.BytesIO(encoded_content),
+            buffer,
             mimetype='text/html',
             as_attachment=True,
             download_name=output_filename,
-            cache_timeout=0
+            max_age=0
         )
-        response.headers['Content-Length'] = len(encoded_content)
+        response.headers.add('Cache-Control', 'no-cache, no-store, must-revalidate')
+        response.headers.add('Pragma', 'no-cache')
+        response.headers.add('Expires', '0')
         return response
     except Exception as e:
         logger.error(f"Download error: {str(e)}")
