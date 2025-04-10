@@ -219,7 +219,10 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Download failed: ' + response.statusText);
+                // More informative error message
+                return response.text().then(text => {
+                    throw new Error(`Download failed (${response.status}): ${text}`);
+                });
             }
             return response.blob();
         })
@@ -235,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Download failed:', error);
-            showError('Failed to download the file. Please try again.');
+            showError(`Failed to download the file: ${error.message}`); // More detailed error message
         });
     }
 });
