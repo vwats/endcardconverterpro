@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ base_filename }} - Portrait Endcard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ base_filename }} - Portrait MRAID Endcard</title>
+    <script src="mraid.js"></script>
     <style>
         /* Reset and base styles */
         * {
@@ -59,17 +60,46 @@
     </style>
 </head>
 <body>
-    <div class="endcard-container">
+    <div class="endcard-container" id="creative">
         {% if is_video %}
-        <video class="media-content" controls loop autoplay muted>
+        <video class="media-content" playsinline autoplay muted loop>
             <source src="{{ data_url }}" type="video/mp4">
-            Your browser does not support the video tag.
         </video>
         {% else %}
         <img class="media-content" src="{{ data_url }}" alt="{{ base_filename }}">
         {% endif %}
-        
-        <div class="attribution">Created with EndCard Converter Pro</div>
     </div>
+    <script>
+        if (typeof mraid !== 'undefined') {
+            if (mraid.getState() === 'loading') {
+                mraid.addEventListener('ready', mraidIsReady);
+            } else {
+                mraidIsReady();
+            }
+        }
+
+        function mraidIsReady() {
+            document.getElementById('creative').addEventListener('click', function() {
+                if (typeof mraid !== 'undefined') {
+                    mraid.open(mraid.getClickThrough());
+                }
+            });
+            
+            if (typeof mraid !== 'undefined') {
+                mraid.addEventListener('viewableChange', viewableChangeHandler);
+            }
+        }
+
+        function viewableChangeHandler(viewable) {
+            if (viewable) {
+                var video = document.querySelector('video');
+                if (video) {
+                    video.play().catch(function(e) {
+                        console.log('Autoplay failed:', e);
+                    });
+                }
+            }
+        }
+    </script>
 </body>
 </html>
