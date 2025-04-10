@@ -18,7 +18,8 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for
 # Configure file upload settings
 UPLOAD_FOLDER = '/tmp/uploads'
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'mp4'}
-MAX_CONTENT_LENGTH = 2.2 * 1024 * 1024  # 2.2MB
+MAX_FILE_SIZE = 2.2 * 1024 * 1024  # 2.2MB per file
+MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5MB total request size (for both files combined)
 
 # Create upload folder if it doesn't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -101,6 +102,14 @@ def upload_combined():
                 return jsonify({'error': f'Invalid portrait file type. Allowed types: {", ".join(ALLOWED_EXTENSIONS)}'}), 400
             
             try:
+                # Check file size before saving
+                portrait_file.seek(0, os.SEEK_END)
+                portrait_size = portrait_file.tell()
+                portrait_file.seek(0)  # Reset file pointer
+                
+                if portrait_size > MAX_FILE_SIZE:
+                    return jsonify({'error': f'Portrait file exceeds the 2.2MB size limit (size: {portrait_size/1024/1024:.2f}MB)'}), 400
+                
                 # Generate a unique ID for this upload
                 upload_id = str(uuid.uuid4())
                 
@@ -110,9 +119,6 @@ def upload_combined():
                 portrait_file.save(portrait_path)
                 
                 logger.debug(f"Portrait file saved at {portrait_path}")
-                
-                # Get file size
-                portrait_size = os.path.getsize(portrait_path)
                 
                 # Determine file type (image or video)
                 portrait_extension = os.path.splitext(portrait_filename)[1].lower()
@@ -154,6 +160,14 @@ def upload_combined():
                 return jsonify({'error': f'Invalid landscape file type. Allowed types: {", ".join(ALLOWED_EXTENSIONS)}'}), 400
             
             try:
+                # Check file size before saving
+                landscape_file.seek(0, os.SEEK_END)
+                landscape_size = landscape_file.tell()
+                landscape_file.seek(0)  # Reset file pointer
+                
+                if landscape_size > MAX_FILE_SIZE:
+                    return jsonify({'error': f'Landscape file exceeds the 2.2MB size limit (size: {landscape_size/1024/1024:.2f}MB)'}), 400
+                
                 # Generate a unique ID for this upload
                 upload_id = str(uuid.uuid4())
                 
@@ -163,9 +177,6 @@ def upload_combined():
                 landscape_file.save(landscape_path)
                 
                 logger.debug(f"Landscape file saved at {landscape_path}")
-                
-                # Get file size
-                landscape_size = os.path.getsize(landscape_path)
                 
                 # Determine file type (image or video)
                 landscape_extension = os.path.splitext(landscape_filename)[1].lower()

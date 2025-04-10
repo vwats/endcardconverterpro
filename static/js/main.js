@@ -50,16 +50,18 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        const MAX_FILE_SIZE = 2.2 * 1024 * 1024; // 2.2MB per file
+        const validTypes = ['image/jpeg', 'image/png', 'video/mp4'];
+        
         // Validate portrait file if provided
         if (portraitFile) {
             // Check file size
-            if (portraitFile.size > 2.2 * 1024 * 1024) {
-                showError('Portrait file size exceeds the 2.2MB limit');
+            if (portraitFile.size > MAX_FILE_SIZE) {
+                showError(`Portrait file size (${(portraitFile.size / (1024 * 1024)).toFixed(2)}MB) exceeds the 2.2MB limit`);
                 return;
             }
             
             // Check file type
-            const validTypes = ['image/jpeg', 'image/png', 'video/mp4'];
             if (!validTypes.includes(portraitFile.type)) {
                 showError('Invalid portrait file type. Please upload a JPEG, PNG, or MP4 file');
                 return;
@@ -69,13 +71,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Validate landscape file if provided
         if (landscapeFile) {
             // Check file size
-            if (landscapeFile.size > 2.2 * 1024 * 1024) {
-                showError('Landscape file size exceeds the 2.2MB limit');
+            if (landscapeFile.size > MAX_FILE_SIZE) {
+                showError(`Landscape file size (${(landscapeFile.size / (1024 * 1024)).toFixed(2)}MB) exceeds the 2.2MB limit`);
                 return;
             }
             
             // Check file type
-            const validTypes = ['image/jpeg', 'image/png', 'video/mp4'];
             if (!validTypes.includes(landscapeFile.type)) {
                 showError('Invalid landscape file type. Please upload a JPEG, PNG, or MP4 file');
                 return;
