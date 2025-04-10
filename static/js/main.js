@@ -211,15 +211,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Use fetch to handle the download properly
         fetch(`/download/${orientation}/${filename}`, {
-            method: 'GET',
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            credentials: 'same-origin',
-            cache: 'no-cache',
-            mode: 'same-origin',
-            redirect: 'follow',
-            referrerPolicy: 'no-referrer',
             body: new URLSearchParams({
                 html: htmlContent
             }).toString()

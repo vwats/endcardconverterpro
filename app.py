@@ -268,7 +268,7 @@ def download_endcard(orientation, filename):
         return jsonify({'error': 'Invalid orientation'}), 400
     
     # Get the HTML content from the request
-    html_content = request.form.get('html') or request.args.get('html')
+    html_content = request.form.get('html')
     
     if not html_content:
         return jsonify({'error': 'HTML content not provided'}), 400
