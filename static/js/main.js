@@ -208,14 +208,36 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Create the download URL with the HTML content
         const baseFilename = filename.split('.')[0];
-        const downloadUrl = `/download/${orientation}/${filename}?html=${encodeURIComponent(htmlContent)}`;
         
-        // Create a temporary link and trigger the download
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `${baseFilename}_${orientation}.html`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Use fetch to handle the download properly
+        fetch(`/download/${orientation}/${filename}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            credentials: 'same-origin',
+            cache: 'no-cache',
+            mode: 'same-origin',
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer',
+            body: new URLSearchParams({
+                html: htmlContent
+            }).toString()
+        })
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${baseFilename}_${orientation}.html`;
+            document.body.appendChild(link);
+            link.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(link);
+        })
+        .catch(error => {
+            console.error('Download failed:', error);
+            showError('Failed to download the file. Please try again.');
+        });
     }
 });

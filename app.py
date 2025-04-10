@@ -230,13 +230,13 @@ def upload_combined():
     
     return jsonify(response)
 
-@app.route('/download/<orientation>/<filename>')
+@app.route('/download/<orientation>/<filename>', methods=['GET', 'POST'])
 def download_endcard(orientation, filename):
     if orientation not in ['portrait', 'landscape']:
         return jsonify({'error': 'Invalid orientation'}), 400
     
     # Get the HTML content from the request
-    html_content = request.args.get('html')
+    html_content = request.form.get('html') or request.args.get('html')
     
     if not html_content:
         return jsonify({'error': 'HTML content not provided'}), 400
