@@ -275,12 +275,16 @@ def download_endcard(orientation, filename):
         base_filename = secure_filename(filename.rsplit('.', 1)[0])
         output_filename = f"{base_filename}_{orientation}.html"
         
+        from flask import Response
         return Response(
             html_content,
             mimetype='text/html',
             headers={
-                "Content-Disposition": f"attachment;filename={output_filename}",
-                "Content-Type": "text/html; charset=utf-8"
+                "Content-Disposition": f"attachment; filename={output_filename}",
+                "Content-Type": "text/html; charset=utf-8",
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
             }
         )
     except Exception as e:
