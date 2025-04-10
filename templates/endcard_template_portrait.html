@@ -57,7 +57,7 @@
             <img id="media" src="{{ data_url }}" alt="Endcard">
         {% endif %}
         <div id="cta">
-          <a href="{{ https_redirect_url | default:'https://example.com' }}" target="_blank" rel="noopener noreferrer">Learn More</a>
+          <a href="{{ https_redirect_url | default('https://example.com') }}" target="_blank" rel="noopener noreferrer">Learn More</a>
         </div>
     </div>
     <script>
