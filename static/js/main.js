@@ -206,10 +206,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function downloadHTML(orientation, filename, htmlContent) {
         if (!filename || !htmlContent) return;
 
-        // Create the download URL with the HTML content
         const baseFilename = filename.split('.')[0];
 
-        // Use fetch to handle the download properly
         fetch(`/download/${orientation}/${filename}`, {
             method: 'POST',
             headers: {
@@ -223,9 +221,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!response.ok) {
                 throw new Error('Download failed');
             }
-            return response.blob();
+            return response.text();
         })
-        .then(blob => {
+        .then(html => {
+            const blob = new Blob([html], {type: 'text/html'});
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;

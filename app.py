@@ -267,9 +267,7 @@ def download_endcard(orientation, filename):
     if orientation not in ['portrait', 'landscape']:
         return jsonify({'error': 'Invalid orientation'}), 400
     
-    # Get the HTML content from the request
     html_content = request.form.get('html')
-    
     if not html_content:
         return jsonify({'error': 'HTML content not provided'}), 400
     
@@ -277,24 +275,14 @@ def download_endcard(orientation, filename):
         base_filename = secure_filename(filename.rsplit('.', 1)[0])
         output_filename = f"{base_filename}_{orientation}.html"
         
-        # Create a file-like object
-        file_obj = io.BytesIO(html_content.encode('utf-8'))
-        file_obj.seek(0)  # Reset file pointer to beginning
-        
-        response = send_file(
-            file_obj,
+        return Response(
+            html_content,
             mimetype='text/html',
-            as_attachment=True,
-            download_name=output_filename
+            headers={
+                "Content-Disposition": f"attachment;filename={output_filename}",
+                "Content-Type": "text/html; charset=utf-8"
+            }
         )
-        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-        response.headers['Pragma'] = 'no-cache'
-        response.headers['Expires'] = '0'
-        return response
-        
-    except Exception as e:
-        logger.error(f"Download error: {str(e)}")
-        return jsonify({'error': 'Failed to generate download'}), 500
 
 # Error handler for file too large
 @app.errorhandler(413)
