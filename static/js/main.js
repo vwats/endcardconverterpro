@@ -256,13 +256,25 @@ window.onload = function() {
             const container = document.createElement('div');
             container.innerHTML = htmlContent;
 
-            // Create a base HTML wrapper with minimal CSP
+            // Set comprehensive sandbox attributes
+            previewFrame.setAttribute('sandbox', [
+                'allow-scripts',
+                'allow-same-origin',
+                'allow-modals',
+                'allow-forms',
+                'allow-popups',
+                'allow-popups-to-escape-sandbox',
+                'allow-presentation'
+            ].join(' '));
+
+            // Create a base HTML wrapper with robust CSP
             const baseHTML = `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' blob: data:;">
                     <script>
                     // Direct window mutation for MRAID mock
                     window.mraid = {
