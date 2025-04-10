@@ -45,13 +45,22 @@
             function handleClick(e) {
                 e.preventDefault();
                 if (typeof mraid !== 'undefined') {
-                    mraid.open(window.mraidRedirectUrl || 'store://details');
+                    if (mraid.getState() === 'ready') {
+                        mraid.open(window.mraidRedirectUrl || 'store://details');
+                    } else {
+                        mraid.addEventListener('ready', function() {
+                            mraid.open(window.mraidRedirectUrl || 'store://details');
+                        });
+                    }
                 }
             }
 
             function handleOrientation() {
                 var isPortrait = window.innerHeight > window.innerWidth;
                 media.style.objectFit = isPortrait ? 'contain' : 'contain';
+                if (typeof mraid !== 'undefined' && mraid.getState() === 'ready') {
+                    mraid.useCustomClose(true);
+                }
             }
 
             function initAd() {
