@@ -57,28 +57,36 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Clear file button handler
-    clearFileBtn.addEventListener('click', function() {
-        mediaFileInput.value = '';
-        hideElement(previewArea);
-        disableElement(combinedUploadBtn);
-    });
+    if (clearFileBtn) {
+        clearFileBtn.addEventListener('click', function() {
+            mediaFileInput.value = '';
+            hideElement(previewArea);
+            disableElement(combinedUploadBtn);
+        });
+    }
 
     // Rotate preview button handler
-    rotatePreviewBtn.addEventListener('click', function() {
-        toggleOrientation();
-    });
+    if (rotatePreviewBtn) {
+        rotatePreviewBtn.addEventListener('click', function() {
+            toggleOrientation();
+        });
+    }
 
     // Download endcard button handler
-    downloadEndcardBtn.addEventListener('click', function() {
-        if (htmlContent && uploadedFilename) {
-            downloadHTML('rotatable', uploadedFilename, htmlContent);
-        } else {
-            showError('No endcard available. Please upload a file and generate an endcard first.');
-        }
-    });
+    if (downloadEndcardBtn) {
+        downloadEndcardBtn.addEventListener('click', function() {
+            if (htmlContent && uploadedFilename) {
+                downloadHTML('rotatable', uploadedFilename, htmlContent);
+            } else {
+                showError('No endcard available. Please upload a file and generate an endcard first.');
+            }
+        });
+    }
 
     // Toggle orientation function
     function toggleOrientation() {
+        if (!previewContainer || !orientationStatus) return;
+        
         if (currentOrientation === 'portrait') {
             currentOrientation = 'landscape';
             previewContainer.classList.remove('portrait-container');
