@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,7 +62,7 @@
             function onMraidReady() {
                 mraidReady = true;
                 mraid.useCustomClose(true);
-                
+
                 if (media.tagName.toLowerCase() === 'video') {
                     media.play().catch(function(error) {
                         console.log('Video autoplay failed:', error);
@@ -74,7 +73,12 @@
             function handleClick(e) {
                 e.preventDefault();
                 if (mraidReady) {
-                    mraid.open(window.mraidRedirectUrl || 'store://details');
+                    let url = window.mraidRedirectUrl || 'store://details';
+                    // Ensure HTTPS
+                    if (!url.startsWith('https://')) {
+                        url = url.replace('http://', 'https://');
+                    }
+                    mraid.open(url, '_blank', 'noopener noreferrer');
                 } else {
                     console.log('MRAID not ready - click handled in preview mode');
                 }
@@ -82,7 +86,7 @@
 
             content.addEventListener('click', handleClick);
             content.addEventListener('touchend', handleClick);
-            
+
             // Initialize MRAID
             initMraid();
         })();
