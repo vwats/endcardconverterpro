@@ -62,17 +62,14 @@
     <div class="endcard-container">
         {% if is_video %}
         <video class="media-content" controls loop autoplay muted>
-            <source src="YOUR_VIDEO_URL_HERE" type="video/mp4">
+            <source src="{{ data_url }}" type="video/mp4">
             Your browser does not support the video tag.
         </video>
         {% else %}
-        <img class="media-content" src="YOUR_IMAGE_URL_HERE" alt="{{ base_filename }}">
+        <img class="media-content" src="{{ data_url }}" alt="{{ base_filename }}">
         {% endif %}
         
         <div class="attribution">Created with EndCard Converter Pro</div>
     </div>
-    
-    <!-- Note: Replace YOUR_IMAGE_URL_HERE or YOUR_VIDEO_URL_HERE with the actual URL -->
-    <!-- This is a template - the user's convertToEndcard() function is expected to fill in the actual media URLs -->
 </body>
 </html>
