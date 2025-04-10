@@ -35,21 +35,23 @@
     <div class="endcard"></div>
     <div id="clickArea"></div>
     <script>
-        function mraidIsReady() {
-            mraid.useCustomClose(true);
+        function handleClick() {
+            if (typeof mraid !== 'undefined') {
+                mraid.expand();
+                mraid.open('market://details?id=com.zing.zepeto');
+            }
         }
 
-        document.getElementById('clickArea').addEventListener('click', function() {
-            if (typeof mraid !== 'undefined') {
-                mraid.open('https://p.applov.in/playablePreview?create=1&qr=1');
-            }
-        });
+        document.getElementById('clickArea').addEventListener('click', handleClick);
+        document.getElementById('clickArea').addEventListener('touchend', handleClick);
 
         if (typeof mraid !== 'undefined') {
             if (mraid.getState() === 'loading') {
-                mraid.addEventListener('ready', mraidIsReady);
+                mraid.addEventListener('ready', function() {
+                    mraid.useCustomClose(true);
+                });
             } else {
-                mraidIsReady();
+                mraid.useCustomClose(true);
             }
         }
     </script>
