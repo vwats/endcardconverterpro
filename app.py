@@ -44,7 +44,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
 # Import and initialize the database
-from models import db, Endcard
+from models import db, Endcard, User
 db.init_app(app)
 
 # Create all database tables
@@ -255,6 +255,11 @@ def upload_combined():
         response['landscape'] = landscape_html
         response['landscape_info'] = landscape_file_info
     
+    # Convert HTML content to a safe JSON format
+    if portrait_html:
+        response['portrait'] = str(portrait_html)
+    if landscape_html:
+        response['landscape'] = str(landscape_html)
     return jsonify(response)
 
 @app.route('/download/<orientation>/<filename>', methods=['GET', 'POST'])
