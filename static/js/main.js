@@ -14,14 +14,56 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultsContainer = document.getElementById('results-container');
     const portraitPreview = document.getElementById('portrait-preview');
     const landscapePreview = document.getElementById('landscape-preview');
-    const downloadPortraitBtn = document.getElementById('download-portrait');
-    const downloadLandscapeBtn = document.getElementById('download-landscape');
+    const downloadBothBtn = document.getElementById('download-both');
 
     // Store HTML content for downloads
     let portraitHTML = '';
     let landscapeHTML = '';
     let portraitFilename = '';
     let landscapeFilename = '';
+
+    // Function to download both versions
+    async function downloadBothVersions() {
+        try {
+            if (portraitHTML && landscapeHTML) {
+                const portraitBlob = new Blob([portraitHTML], { type: 'text/html' });
+                const landscapeBlob = new Blob([landscapeHTML], { type: 'text/html' });
+                
+                const portraitUrl = window.URL.createObjectURL(portraitBlob);
+                const landscapeUrl = window.URL.createObjectURL(landscapeBlob);
+                
+                // Create and trigger portrait download
+                const portraitLink = document.createElement('a');
+                portraitLink.href = portraitUrl;
+                portraitLink.download = portraitFilename || 'endcard_portrait.html';
+                document.body.appendChild(portraitLink);
+                portraitLink.click();
+                
+                // Small delay between downloads
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Create and trigger landscape download
+                const landscapeLink = document.createElement('a');
+                landscapeLink.href = landscapeUrl;
+                landscapeLink.download = landscapeFilename || 'endcard_landscape.html';
+                document.body.appendChild(landscapeLink);
+                landscapeLink.click();
+                
+                // Cleanup
+                window.URL.revokeObjectURL(portraitUrl);
+                window.URL.revokeObjectURL(landscapeUrl);
+                document.body.removeChild(portraitLink);
+                document.body.removeChild(landscapeLink);
+            }
+        } catch (error) {
+            console.error('Download failed:', error);
+        }
+    }
+
+    // Add click event listener for download button
+    if (downloadBothBtn) {
+        downloadBothBtn.addEventListener('click', downloadBothVersions);
+    }
     let currentEndcardId = '';
 
     // Initialize MRAID and handle events
