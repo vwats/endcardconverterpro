@@ -24,15 +24,36 @@ document.addEventListener('DOMContentLoaded', function() {
     let landscapeFilename = '';
     let currentEndcardId = '';
 
-    // Check URL parameters for endcard_id (for editing)
-    window.onload = function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const endcardId = urlParams.get('endcard_id');
-        if (endcardId) {
-            endcardIdField.value = endcardId;
-            currentEndcardId = endcardId;
-        }
-    };
+    // Initialize MRAID and handle events
+if (typeof mraid !== 'undefined') {
+    if (mraid.getState() === 'loading') {
+        mraid.addEventListener('ready', mraidIsReady);
+    } else {
+        mraidIsReady();
+    }
+}
+
+function mraidIsReady() {
+    mraid.useCustomClose(true);
+    
+    // Handle video autoplay if present
+    const video = document.querySelector('video');
+    if (video) {
+        video.play().catch(function(error) {
+            console.log("Video autoplay failed:", error);
+        });
+    }
+}
+
+// Check URL parameters for endcard_id (for editing)
+window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const endcardId = urlParams.get('endcard_id');
+    if (endcardId) {
+        endcardIdField.value = endcardId;
+        currentEndcardId = endcardId;
+    }
+};
 
     // Handle combined upload form submission
     combinedUploadForm.addEventListener('submit', function(e) {
