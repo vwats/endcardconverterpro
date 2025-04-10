@@ -72,20 +72,28 @@ def upgrade():
 @app.route('/upload/combined', methods=['POST'])
 def upload_combined():
     """Handle combined file upload for both portrait and landscape orientations"""
-    # Check if user is logged in and has credits
-    replit_user_id = request.headers.get('X-Replit-User-Id')
-    if not replit_user_id:
-        return jsonify({'error': 'Please login to use this service'}), 401
+    # Skip login check if in development mode
+    if not os.environ.get('PRODUCTION'):
+        user = User.query.first()
+        if not user:
+            user = User(replit_id='dev', credits=999)
+            db.session.add(user)
+            db.session.commit()
+    else:
+        # Check if user is logged in and has credits
+        replit_user_id = request.headers.get('X-Replit-User-Id')
+        if not replit_user_id:
+            return jsonify({'error': 'Please login to use this service'}), 401
+            
+        user = User.query.filter_by(replit_id=replit_user_id).first()
+        if not user:
+            # Create new user with 1 free credit
+            user = User(replit_id=replit_user_id)
+            db.session.add(user)
+            db.session.commit()
         
-    user = User.query.filter_by(replit_id=replit_user_id).first()
-    if not user:
-        # Create new user with 1 free credit
-        user = User(replit_id=replit_user_id)
-        db.session.add(user)
-        db.session.commit()
-    
-    if user.credits <= 0:
-        return jsonify({'error': 'No credits remaining. Please upgrade to continue using the service.'}), 402
+        if user.credits <= 0:
+            return jsonify({'error': 'No credits remaining. Please upgrade to continue using the service.'}), 402
         
     portrait_html = None
     landscape_html = None
