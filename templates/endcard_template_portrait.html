@@ -13,21 +13,6 @@
             overflow: hidden;
             background-color: black;
         }
-        #content {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-            background-color: #000;
-            transition: transform 0.3s ease;
-        }
-        #media {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
         .controls {
             position: fixed;
             top: 10px;
@@ -46,6 +31,21 @@
             cursor: pointer;
             font-weight: bold;
         }
+        #content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            background-color: #000;
+            transition: transform 0.3s ease;
+        }
+        #media {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
         .landscape {
             transform: rotate(90deg) scale(0.5625);
         }
@@ -53,8 +53,8 @@
 </head>
 <body>
     <div class="controls">
+        <button onclick="downloadHTML()">Download HTML</button>
         <button onclick="toggleRotation()">Rotate</button>
-        <button onclick="location.reload()">Reload</button>
     </div>
     <div id="content">
         {% if is_video %}

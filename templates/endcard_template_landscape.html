@@ -13,6 +13,24 @@
             overflow: hidden;
             background-color: black;
         }
+        .controls {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        .controls button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            background: #2d89ef;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
         #content {
             position: absolute;
             top: 0;
@@ -30,6 +48,10 @@
     </style>
 </head>
 <body>
+    <div class="controls">
+        <button onclick="downloadHTML()">Download HTML</button>
+        <button onclick="toggleRotation()">Rotate</button>
+    </div>
     <div id="content">
         {% if is_video %}
             <video id="media" src="{{ data_url }}" playsinline autoplay loop muted></video>
