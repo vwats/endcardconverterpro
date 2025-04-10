@@ -28,27 +28,27 @@ document.addEventListener('DOMContentLoaded', function() {
             if (portraitHTML && landscapeHTML) {
                 const portraitBlob = new Blob([portraitHTML], { type: 'text/html' });
                 const landscapeBlob = new Blob([landscapeHTML], { type: 'text/html' });
-                
+
                 const portraitUrl = window.URL.createObjectURL(portraitBlob);
                 const landscapeUrl = window.URL.createObjectURL(landscapeBlob);
-                
+
                 // Create and trigger portrait download
                 const portraitLink = document.createElement('a');
                 portraitLink.href = portraitUrl;
                 portraitLink.download = portraitFilename || 'endcard_portrait.html';
                 document.body.appendChild(portraitLink);
                 portraitLink.click();
-                
+
                 // Small delay between downloads
                 await new Promise(resolve => setTimeout(resolve, 100));
-                
+
                 // Create and trigger landscape download
                 const landscapeLink = document.createElement('a');
                 landscapeLink.href = landscapeUrl;
                 landscapeLink.download = landscapeFilename || 'endcard_landscape.html';
                 document.body.appendChild(landscapeLink);
                 landscapeLink.click();
-                
+
                 // Cleanup
                 window.URL.revokeObjectURL(portraitUrl);
                 window.URL.revokeObjectURL(landscapeUrl);
@@ -77,7 +77,7 @@ if (typeof mraid !== 'undefined') {
 
 function mraidIsReady() {
     mraid.useCustomClose(true);
-    
+
     // Handle video autoplay if present
     const video = document.querySelector('video');
     if (video) {
@@ -252,39 +252,19 @@ window.onload = function() {
     function updatePreview(iframeElement, htmlContent) {
         if (!iframeElement || !htmlContent) return;
 
-        // Get the iframe document
-        const iframeDoc = iframeElement.contentDocument || iframeElement.contentWindow.document;
-        
-        // Clear existing content
-        iframeDoc.open();
-        iframeDoc.write(htmlContent);
-        iframeDoc.close();
+        try {
+            const iframeDoc = iframeElement.contentDocument || iframeElement.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(htmlContent);
+            iframeDoc.close();
 
-        // Add necessary styles to make content visible
-        const style = iframeDoc.createElement('style');
-        style.textContent = `
-            body { 
-                margin: 0; 
-                padding: 0; 
-                width: 100%; 
-                height: 100vh; 
-                background: #000; 
+            // Initialize MRAID if present
+            if (iframeDoc.defaultView.mraid) {
+                iframeDoc.defaultView.mraidIsReady();
             }
-            #content {
-                width: 100%;
-                height: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            #media {
-                max-width: 100%;
-                max-height: 100%;
-                width: auto;
-                height: auto;
-            }
-        `;
-        iframeDoc.head.appendChild(style);
+        } catch (error) {
+            console.error("Preview update failed:", error);
+        }
     }
 
     function downloadHTML(orientation, filename, htmlContent) {

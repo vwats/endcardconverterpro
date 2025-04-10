@@ -271,6 +271,13 @@ def upload_combined():
         response['landscape'] = str(landscape_html)
     return jsonify(response)
 
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    return response
+
 @app.route('/download/<orientation>/<filename>', methods=['POST'])
 @no_size_limit
 def download_endcard(orientation, filename):
