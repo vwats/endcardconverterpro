@@ -212,6 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'text/html'
             },
             body: new URLSearchParams({
                 html: htmlContent

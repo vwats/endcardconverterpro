@@ -285,12 +285,16 @@ def download_endcard(orientation, filename):
         base_filename = secure_filename(filename.rsplit('.', 1)[0])
         output_filename = f"{base_filename}_{orientation}.html"
         
-        return send_file(
-            io.BytesIO(html_content.encode('utf-8')),
+        encoded_content = html_content.encode('utf-8')
+        response = send_file(
+            io.BytesIO(encoded_content),
             mimetype='text/html',
             as_attachment=True,
-            download_name=output_filename
+            download_name=output_filename,
+            cache_timeout=0
         )
+        response.headers['Content-Length'] = len(encoded_content)
+        return response
     except Exception as e:
         logger.error(f"Download error: {str(e)}")
         return jsonify({'error': 'Failed to generate download'}), 500
