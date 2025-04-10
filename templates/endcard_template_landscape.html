@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,41 +6,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MRAID Endcard</title>
     <style>
-        * { margin: 0; padding: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
             width: 100%;
             height: 100%;
             overflow: hidden;
+            background-color: black;
+        }
+        #content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: url("{{ data_url }}") center center / contain no-repeat;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
+    <div id="content"></div>
     <script>
-        function mraidIsReady() {
-            if (mraid.getState() === 'loading') {
-                mraid.addEventListener('ready', initAd);
+        (function() {
+            var content = document.getElementById('content');
+            
+            function handleClick(e) {
+                e.preventDefault();
+                if (typeof mraid !== 'undefined') {
+                    mraid.open(window.mraidRedirectUrl || 'store://details');
+                }
+            }
+
+            function initAd() {
+                if (typeof mraid !== 'undefined') {
+                    mraid.useCustomClose(true);
+                }
+                content.addEventListener('click', handleClick);
+                content.addEventListener('touchend', handleClick);
+            }
+
+            if (typeof mraid !== 'undefined') {
+                if (mraid.getState() === 'loading') {
+                    mraid.addEventListener('ready', initAd);
+                } else {
+                    initAd();
+                }
             } else {
                 initAd();
             }
-        }
-
-        function initAd() {
-            mraid.useCustomClose(true);
-            document.body.addEventListener('click', handleClick);
-            document.body.addEventListener('touchend', handleClick);
-        }
-
-        function handleClick() {
-            if (typeof mraid !== 'undefined') {
-                mraid.expand();
-                mraid.open(window.mraidRedirectUrl || 'store://details');
-            }
-        }
-
-        if (typeof mraid !== 'undefined') {
-            mraidIsReady();
-        }
+        })();
     </script>
 </body>
 </html>
