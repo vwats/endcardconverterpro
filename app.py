@@ -275,18 +275,15 @@ def download_endcard(orientation, filename):
         base_filename = secure_filename(filename.rsplit('.', 1)[0])
         output_filename = f"{base_filename}_{orientation}.html"
         
-        from flask import Response
-        return Response(
-            html_content,
-            mimetype='text/html',
-            headers={
-                "Content-Disposition": f"attachment; filename={output_filename}",
-                "Content-Type": "text/html; charset=utf-8",
-                "Cache-Control": "no-cache, no-store, must-revalidate",
-                "Pragma": "no-cache",
-                "Expires": "0"
-            }
-        )
+        from flask import make_response
+        response = make_response(html_content)
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
+        response.headers['Content-Disposition'] = f'attachment; filename="{output_filename}"'
+        response.headers['Content-Length'] = len(html_content.encode('utf-8'))
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
     except Exception as e:
         logger.error(f"Download error: {str(e)}")
         return jsonify({'error': 'Failed to generate download'}), 500
