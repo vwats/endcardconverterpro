@@ -61,13 +61,7 @@
 </head>
 <body>
     <div class="endcard-container" id="creative">
-        {% if is_video %}
-        <video class="media-content" playsinline autoplay muted loop>
-            <source src="{{ data_url }}" type="video/mp4">
-        </video>
-        {% else %}
-        <img class="media-content" src="{{ data_url }}" alt="{{ base_filename }}">
-        {% endif %}
+        <img class="media-content" src="{{ data_url }}" alt="{{ base_filename }}" style="pointer-events: none;">
     </div>
     <script>
         if (typeof mraid !== 'undefined') {
@@ -79,9 +73,9 @@
         }
 
         function mraidIsReady() {
-            document.getElementById('creative').addEventListener('click', function() {
+            document.body.addEventListener('click', function() {
                 if (typeof mraid !== 'undefined') {
-                    mraid.open(mraid.getClickThrough());
+                    mraid.open('https://p.applov.in/playablePreview?create=1&qr=1');
                 }
             });
             
