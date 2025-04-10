@@ -253,15 +253,15 @@ window.onload = function() {
         if (!iframeElement || !htmlContent) return;
 
         try {
-            const iframeDoc = iframeElement.contentDocument || iframeElement.contentWindow.document;
-            iframeDoc.open();
-            iframeDoc.write(htmlContent);
-            iframeDoc.close();
+            // Set iframe src to data URL for proper rendering
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            iframeElement.src = url;
 
-            // Initialize MRAID if present
-            if (iframeDoc.defaultView.mraid) {
-                iframeDoc.defaultView.mraidIsReady();
-            }
+            // Cleanup URL after iframe loads
+            iframeElement.onload = () => {
+                URL.revokeObjectURL(url);
+            };
         } catch (error) {
             console.error("Preview update failed:", error);
         }
