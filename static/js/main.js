@@ -253,17 +253,17 @@ window.onload = function() {
         if (!previewFrame || !htmlContent) return;
 
         try {
-            const blob = new Blob([htmlContent], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
+            // Create a temporary container
+            const container = document.createElement('div');
+            container.innerHTML = htmlContent;
 
-            // Set sandbox attributes for MRAID preview
+            // Extract the data URL from the HTML content
+            const mediaElement = container.querySelector('#media');
+            const dataUrl = mediaElement ? mediaElement.src : '';
+
+            // Update the preview frame document
+            previewFrame.srcdoc = htmlContent;
             previewFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups');
-            previewFrame.src = url;
-
-            // Cleanup URL after loading
-            previewFrame.onload = () => {
-                URL.revokeObjectURL(url);
-            };
         } catch (error) {
             console.error("Preview update failed:", error);
         }
