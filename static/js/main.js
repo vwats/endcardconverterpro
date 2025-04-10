@@ -225,8 +225,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(blob => {
             const url = window.URL.createObjectURL(new Blob([blob], {type: 'text/html;charset=utf-8'}));
-        .then(blob => {
-            const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
             link.download = `${baseFilename}_${orientation}.html`;
