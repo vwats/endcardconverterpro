@@ -255,6 +255,7 @@ window.onload = function() {
         try {
             const blob = new Blob([htmlContent], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
+            previewFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
             previewFrame.src = url;
 
             previewFrame.onload = () => {
