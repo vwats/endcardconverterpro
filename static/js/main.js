@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const portraitFileInput = document.getElementById('portrait-file-input');
     const landscapeFileInput = document.getElementById('landscape-file-input');
     const combinedUploadBtn = document.getElementById('combined-upload-btn');
-    
+
     const endcardIdField = document.getElementById('endcard-id');
     const loadingIndicator = document.getElementById('loading-indicator');
     const errorContainer = document.getElementById('error-container');
@@ -37,22 +37,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle combined upload form submission
     combinedUploadForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         // Reset UI state
         hideElement(errorContainer);
-        
+
         const portraitFile = portraitFileInput.files[0];
         const landscapeFile = landscapeFileInput.files[0];
-        
+
         // Validate at least one file is selected
         if (!portraitFile && !landscapeFile) {
             showError('Please select at least one file for conversion');
             return;
         }
-        
+
         const MAX_FILE_SIZE = 2.2 * 1024 * 1024; // 2.2MB per file
         const validTypes = ['image/jpeg', 'image/png', 'video/mp4'];
-        
+
         // Validate portrait file if provided
         if (portraitFile) {
             // Check file size
@@ -60,14 +60,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 showError(`Portrait file size (${(portraitFile.size / (1024 * 1024)).toFixed(2)}MB) exceeds the 2.2MB limit`);
                 return;
             }
-            
+
             // Check file type
             if (!validTypes.includes(portraitFile.type)) {
                 showError('Invalid portrait file type. Please upload a JPEG, PNG, or MP4 file');
                 return;
             }
         }
-        
+
         // Validate landscape file if provided
         if (landscapeFile) {
             // Check file size
@@ -75,34 +75,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 showError(`Landscape file size (${(landscapeFile.size / (1024 * 1024)).toFixed(2)}MB) exceeds the 2.2MB limit`);
                 return;
             }
-            
+
             // Check file type
             if (!validTypes.includes(landscapeFile.type)) {
                 showError('Invalid landscape file type. Please upload a JPEG, PNG, or MP4 file');
                 return;
             }
         }
-        
+
         // Show loading indicator
         showElement(loadingIndicator);
         disableElement(combinedUploadBtn);
-        
+
         // Create FormData and append files
         const formData = new FormData();
-        
+
         if (portraitFile) {
             formData.append('portrait_file', portraitFile);
         }
-        
+
         if (landscapeFile) {
             formData.append('landscape_file', landscapeFile);
         }
-        
+
         // Add endcard_id if editing an existing record
         if (endcardIdField.value) {
             formData.append('endcard_id', endcardIdField.value);
         }
-        
+
         // Send request to server
         fetch('/upload/combined', {
             method: 'POST',
@@ -120,27 +120,27 @@ document.addEventListener('DOMContentLoaded', function() {
             // Hide loading indicator
             hideElement(loadingIndicator);
             enableElement(combinedUploadBtn);
-            
+
             // Store endcard ID
             if (data.endcard_id) {
                 endcardIdField.value = data.endcard_id;
                 currentEndcardId = data.endcard_id;
             }
-            
+
             // Process portrait data if available
             if (data.portrait) {
                 portraitHTML = data.portrait;
                 portraitFilename = data.portrait_info.filename;
                 updatePreview(portraitPreview, portraitHTML);
             }
-            
+
             // Process landscape data if available
             if (data.landscape) {
                 landscapeHTML = data.landscape;
                 landscapeFilename = data.landscape_info.filename;
                 updatePreview(landscapePreview, landscapeHTML);
             }
-            
+
             // Show results and scroll to them
             showElement(resultsContainer);
             resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -193,11 +193,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updatePreview(iframeElement, htmlContent) {
         if (!iframeElement || !htmlContent) return;
-        
+
         // Update the iframe content
         const iframe = iframeElement;
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        
+
         iframeDoc.open();
         iframeDoc.write(htmlContent);
         iframeDoc.close();
@@ -205,10 +205,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function downloadHTML(orientation, filename, htmlContent) {
         if (!filename || !htmlContent) return;
-        
+
         // Create the download URL with the HTML content
         const baseFilename = filename.split('.')[0];
-        
+
         // Use fetch to handle the download properly
         fetch(`/download/${orientation}/${filename}`, {
             method: 'POST',
@@ -221,9 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.error || 'Download failed');
-                });
+                throw new Error('Download failed');
             }
             return response.blob();
         })
