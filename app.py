@@ -289,17 +289,15 @@ def download_endcard(orientation, filename):
         buffer = io.BytesIO(encoded_content)
         buffer.seek(0)
         
-        response = send_file(
+        return send_file(
             buffer,
-            mimetype='text/html',
+            mimetype='text/html; charset=utf-8',
             as_attachment=True,
             download_name=output_filename,
-            max_age=0
+            etag=False,
+            conditional=False,
+            add_etags=False
         )
-        response.headers.add('Cache-Control', 'no-cache, no-store, must-revalidate')
-        response.headers.add('Pragma', 'no-cache')
-        response.headers.add('Expires', '0')
-        return response
     except Exception as e:
         logger.error(f"Download error: {str(e)}")
         return jsonify({'error': 'Failed to generate download'}), 500

@@ -212,7 +212,6 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'text/html'
             },
             body: new URLSearchParams({
                 html: htmlContent
@@ -220,19 +219,12 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.error || 'Download failed');
-                });
+                throw new Error('Download failed: ' + response.statusText);
             }
             return response.blob();
         })
         .then(blob => {
-            if (blob.type !== 'text/html') {
-                const newBlob = new Blob([blob], {type: 'text/html'});
-                return newBlob;
-            }
-            return blob;
-        })
+            const url = window.URL.createObjectURL(new Blob([blob], {type: 'text/html;charset=utf-8'}));
         .then(blob => {
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
