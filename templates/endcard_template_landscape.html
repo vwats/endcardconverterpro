@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,10 +21,15 @@
             height: 100%;
             cursor: pointer;
             background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         #media {
-            width: 100%;
-            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
             object-fit: contain;
         }
     </style>
@@ -39,31 +45,46 @@
     <script>
         (function() {
             var content = document.getElementById('content');
+            var media = document.getElementById('media');
+            var mraidReady = false;
+
+            function initMraid() {
+                if (typeof mraid !== 'undefined') {
+                    if (mraid.getState() === 'loading') {
+                        mraid.addEventListener('ready', onMraidReady);
+                    } else {
+                        onMraidReady();
+                    }
+                } else {
+                    console.log('MRAID not found - running in preview mode');
+                }
+            }
+
+            function onMraidReady() {
+                mraidReady = true;
+                mraid.useCustomClose(true);
+                
+                if (media.tagName.toLowerCase() === 'video') {
+                    media.play().catch(function(error) {
+                        console.log('Video autoplay failed:', error);
+                    });
+                }
+            }
 
             function handleClick(e) {
                 e.preventDefault();
-                if (typeof mraid !== 'undefined') {
+                if (mraidReady) {
                     mraid.open(window.mraidRedirectUrl || 'store://details');
-                }
-            }
-
-            function initAd() {
-                if (typeof mraid !== 'undefined') {
-                    mraid.useCustomClose(true);
-                }
-                content.addEventListener('click', handleClick);
-                content.addEventListener('touchend', handleClick);
-            }
-
-            if (typeof mraid !== 'undefined') {
-                if (mraid.getState() === 'loading') {
-                    mraid.addEventListener('ready', initAd);
                 } else {
-                    initAd();
+                    console.log('MRAID not ready - click handled in preview mode');
                 }
-            } else {
-                initAd();
             }
+
+            content.addEventListener('click', handleClick);
+            content.addEventListener('touchend', handleClick);
+            
+            // Initialize MRAID
+            initMraid();
         })();
     </script>
 </body>
