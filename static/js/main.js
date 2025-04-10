@@ -219,7 +219,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 html: htmlContent
             }).toString()
         })
-        .then(response => response.blob())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Download failed');
+                });
+            }
+            return response.blob();
+        })
         .then(blob => {
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
