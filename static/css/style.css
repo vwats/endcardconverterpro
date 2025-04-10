@@ -9,11 +9,23 @@
     width: 270px;
     height: 480px; /* 9:16 aspect ratio */
     transition: all 0.3s ease;
+    margin: 0 auto;
 }
 
 .preview-container.landscape {
     width: 480px;
     height: 270px; /* 16:9 aspect ratio */
+}
+
+.btn-purple {
+    background-color: var(--bs-purple);
+    color: white;
+    border: none;
+}
+
+.btn-purple:hover {
+    background-color: #6f42c1;
+    color: white;
 }
 
 /* Responsive adjustment for mobile */
