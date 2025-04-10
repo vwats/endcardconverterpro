@@ -10,21 +10,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewArea = document.querySelector('.preview-area');
     const mediaPreview = document.getElementById('media-preview');
     const videoPreview = document.getElementById('video-preview');
-
-    // Results and preview elements
-    const endcardIdField = document.getElementById('endcard-id');
-    const loadingIndicator = document.getElementById('loading-indicator');
-    const errorContainer = document.getElementById('error-container');
-    const errorMessage = document.getElementById('error-message');
-    const resultsContainer = document.getElementById('results-container');
     const endcardPreview = document.getElementById('endcard-preview');
     const previewContainer = document.getElementById('preview-container');
     const orientationStatus = document.getElementById('orientation-status');
     const rotatePreviewBtn = document.getElementById('rotate-preview-btn');
     const downloadEndcardBtn = document.getElementById('download-endcard-btn');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const errorContainer = document.getElementById('error-container');
+    const errorMessage = document.getElementById('error-message');
+    const resultsContainer = document.getElementById('results-container');
+    const endcardIdField = document.getElementById('endcard-id');
 
     // State variables
-    let currentOrientation = 'portrait'; // 'portrait' or 'landscape'
+    let currentOrientation = 'portrait';
     let portraitHtml = '';
     let landscapeHtml = '';
     let uploadedFilename = '';
@@ -36,8 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const file = this.files[0];
             if (!file) return;
 
-            // Preview the file (using first file for preview)
-            if (this === portraitFileInput || !landscapeFileInput.files[0]) {
+            if (this === portraitFileInput) {
                 const isVideo = file.type.startsWith('video/');
                 const fileURL = URL.createObjectURL(file);
 
@@ -54,7 +51,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 showElement(previewArea);
             }
 
-            // Enable generate button if both files are selected
             if (portraitFileInput.files[0] && landscapeFileInput.files[0]) {
                 enableElement(combinedUploadBtn);
             } else {
@@ -66,7 +62,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Clear file button handler
     if (clearFileBtn) {
         clearFileBtn.addEventListener('click', function() {
-            mediaFileInput.value = '';
+            portraitFileInput.value = '';
+            landscapeFileInput.value = '';
             hideElement(previewArea);
             disableElement(combinedUploadBtn);
         });
@@ -74,19 +71,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Rotate preview button handler
     if (rotatePreviewBtn) {
-        rotatePreviewBtn.addEventListener('click', function() {
-            toggleOrientation();
-        });
+        rotatePreviewBtn.addEventListener('click', toggleOrientation);
     }
 
     // Download endcard button handler
     if (downloadEndcardBtn) {
         downloadEndcardBtn.addEventListener('click', function() {
-            if (htmlContent && uploadedFilename) {
-                downloadHTML('rotatable', uploadedFilename, htmlContent);
-            } else {
-                showError('No endcard available. Please upload a file and generate an endcard first.');
+            if (!portraitHtml || !landscapeHtml || !uploadedFilename) {
+                showError('No endcard available. Please upload files and generate an endcard first.');
+                return;
             }
+
+            const htmlContent = currentOrientation === 'portrait' ? portraitHtml : landscapeHtml;
+            downloadHTML(currentOrientation, uploadedFilename, htmlContent);
         });
     }
 
@@ -94,20 +91,150 @@ document.addEventListener('DOMContentLoaded', function() {
     function toggleOrientation() {
         if (!previewContainer || !orientationStatus) return;
 
-        if (currentOrientation === 'portrait') {
-            currentOrientation = 'landscape';
-            previewContainer.classList.remove('portrait-container');
-            previewContainer.classList.add('landscape-container');
-            orientationStatus.textContent = 'Landscape Mode';
-            updatePreview(endcardPreview, landscapeHtml); //Update to use landscape HTML
+        currentOrientation = currentOrientation === 'portrait' ? 'landscape' : 'portrait';
 
-        } else {
+        previewContainer.classList.remove(currentOrientation === 'portrait' ? 'landscape-container' : 'portrait-container');
+        previewContainer.classList.add(currentOrientation === 'portrait' ? 'portrait-container' : 'landscape-container');
+
+        orientationStatus.textContent = currentOrientation === 'portrait' ? 'Portrait Mode' : 'Landscape Mode';
+
+        const htmlContent = currentOrientation === 'portrait' ? portraitHtml : landscapeHtml;
+        updatePreview(endcardPreview, htmlContent);
+    }
+
+    // Form submission handler
+    combinedUploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        hideElement(errorContainer);
+
+        const portraitFile = portraitFileInput.files[0];
+        const landscapeFile = landscapeFileInput.files[0];
+
+        if (!portraitFile || !landscapeFile) {
+            showError('Please select both portrait and landscape files');
+            return;
+        }
+
+        const MAX_FILE_SIZE = 2.2 * 1024 * 1024;
+        const validTypes = ['image/jpeg', 'image/png', 'video/mp4'];
+
+        if (portraitFile.size > MAX_FILE_SIZE || landscapeFile.size > MAX_FILE_SIZE) {
+            showError('File size exceeds the 2.2MB limit');
+            return;
+        }
+
+        if (!validTypes.includes(portraitFile.type) || !validTypes.includes(landscapeFile.type)) {
+            showError('Invalid file type. Please upload JPEG, PNG, or MP4 files');
+            return;
+        }
+
+        showElement(loadingIndicator);
+        disableElement(combinedUploadBtn);
+
+        const formData = new FormData();
+        formData.append('portrait_file', portraitFile);
+        formData.append('landscape_file', landscapeFile);
+
+        if (endcardIdField.value) {
+            formData.append('endcard_id', endcardIdField.value);
+        }
+
+        fetch('/upload/combined', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Error converting file');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            hideElement(loadingIndicator);
+            enableElement(combinedUploadBtn);
+
+            if (data.endcard_id) {
+                endcardIdField.value = data.endcard_id;
+                currentEndcardId = data.endcard_id;
+            }
+
+            portraitHtml = data.portrait;
+            landscapeHtml = data.landscape;
+            uploadedFilename = data.portrait_info.filename;
+
             currentOrientation = 'portrait';
+            updatePreview(endcardPreview, portraitHtml);
+
             previewContainer.classList.remove('landscape-container');
             previewContainer.classList.add('portrait-container');
             orientationStatus.textContent = 'Portrait Mode';
-            updatePreview(endcardPreview, portraitHtml); //Update to use portrait HTML
-        }
+
+            showElement(resultsContainer);
+            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        })
+        .catch(error => {
+            hideElement(loadingIndicator);
+            enableElement(combinedUploadBtn);
+            showError(error.message);
+        });
+    });
+
+    function downloadHTML(orientation, filename, htmlContent) {
+        if (!filename || !htmlContent) return;
+
+        const baseFilename = filename.split('.')[0];
+        const outputFilename = `${baseFilename}_${orientation}.html`;
+
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = outputFilename;
+        document.body.appendChild(link);
+
+        link.click();
+
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+            document.body.removeChild(link);
+        }, 100);
+    }
+
+    function showElement(element) {
+        if (element) element.classList.remove('d-none');
+    }
+
+    function hideElement(element) {
+        if (element) element.classList.add('d-none');
+    }
+
+    function enableElement(element) {
+        if (element) element.disabled = false;
+    }
+
+    function disableElement(element) {
+        if (element) element.disabled = true;
+    }
+
+    function showError(message) {
+        if (errorMessage) errorMessage.textContent = message;
+        showElement(errorContainer);
+        errorContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function updatePreview(iframeElement, htmlContent) {
+        if (!iframeElement || !htmlContent) return;
+
+        const iframe = iframeElement;
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+        iframeDoc.open();
+        iframeDoc.write(htmlContent);
+        iframeDoc.close();
     }
 
     // Initialize MRAID and handle events
@@ -140,164 +267,4 @@ document.addEventListener('DOMContentLoaded', function() {
             currentEndcardId = endcardId;
         }
     };
-
-    // Form submission handler
-    combinedUploadForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        // Reset UI state
-        hideElement(errorContainer);
-
-        const portraitFile = portraitFileInput.files[0];
-        const landscapeFile = landscapeFileInput.files[0];
-
-        // Validate files are selected
-        if (!portraitFile || !landscapeFile) {
-            showError('Please select both portrait and landscape files');
-            return;
-        }
-
-        const MAX_FILE_SIZE = 2.2 * 1024 * 1024; // 2.2MB
-        const validTypes = ['image/jpeg', 'image/png', 'video/mp4'];
-
-        // Check file sizes
-        if (portraitFile.size > MAX_FILE_SIZE) {
-            showError(`Portrait file size (${(portraitFile.size / (1024 * 1024)).toFixed(2)}MB) exceeds the 2.2MB limit`);
-            return;
-        }
-        if (landscapeFile.size > MAX_FILE_SIZE) {
-            showError(`Landscape file size (${(landscapeFile.size / (1024 * 1024)).toFixed(2)}MB) exceeds the 2.2MB limit`);
-            return;
-        }
-
-        // Check file types
-        if (!validTypes.includes(portraitFile.type)) {
-            showError('Invalid portrait file type. Please upload a JPEG, PNG, or MP4 file');
-            return;
-        }
-        if (!validTypes.includes(landscapeFile.type)) {
-            showError('Invalid landscape file type. Please upload a JPEG, PNG, or MP4 file');
-            return;
-        }
-
-        // Show loading indicator
-        showElement(loadingIndicator);
-        disableElement(combinedUploadBtn);
-
-        // Create FormData and append file
-        const formData = new FormData();
-        formData.append('portrait_file', portraitFile);
-        formData.append('landscape_file', landscapeFile);
-
-        // Add endcard_id if editing an existing record
-        if (endcardIdField.value) {
-            formData.append('endcard_id', endcardIdField.value);
-        }
-
-        // Send request to server
-        fetch('/upload/combined', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.error || 'Error converting file');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Hide loading indicator
-            hideElement(loadingIndicator);
-            enableElement(combinedUploadBtn);
-
-            // Store endcard ID
-            if (data.endcard_id) {
-                endcardIdField.value = data.endcard_id;
-                currentEndcardId = data.endcard_id;
-            }
-
-            // Store HTML content and filename
-            portraitHtml = data.portraitHtml;
-            landscapeHtml = data.landscapeHtml;
-            uploadedFilename = data.file_info.filename;
-
-            // Update preview
-            updatePreview(endcardPreview, portraitHtml);
-
-            // Reset orientation to portrait
-            currentOrientation = 'portrait';
-            previewContainer.classList.remove('landscape-container');
-            previewContainer.classList.add('portrait-container');
-            orientationStatus.textContent = 'Portrait Mode';
-
-            // Show results and scroll to them
-            showElement(resultsContainer);
-            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        })
-        .catch(error => {
-            hideElement(loadingIndicator);
-            enableElement(combinedUploadBtn);
-            showError(error.message);
-        });
-    });
-
-    // Helper Functions
-    function showElement(element) {
-        if (element) element.classList.remove('d-none');
-    }
-
-    function hideElement(element) {
-        if (element) element.classList.add('d-none');
-    }
-
-    function enableElement(element) {
-        if (element) element.disabled = false;
-    }
-
-    function disableElement(element) {
-        if (element) element.disabled = true;
-    }
-
-    function showError(message) {
-        if (errorMessage) errorMessage.textContent = message;
-        showElement(errorContainer);
-        errorContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    function updatePreview(iframeElement, htmlContent) {
-        if (!iframeElement || !htmlContent) return;
-
-        // Update the iframe content
-        const iframe = iframeElement;
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-
-        iframeDoc.open();
-        iframeDoc.write(htmlContent);
-        iframeDoc.close();
-    }
-
-    function downloadHTML(orientation, filename, htmlContent) {
-        if (!filename || !htmlContent) return;
-
-        const baseFilename = filename.split('.')[0];
-        const blob = new Blob([htmlContent], {type: 'text/html;charset=utf-8'});
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-
-        if (orientation === 'rotatable') {
-            link.download = `${baseFilename}_endcard.html`;
-        } else {
-            link.download = `${baseFilename}_${orientation}.html`;
-        }
-
-        document.body.appendChild(link);
-        link.click();
-        setTimeout(() => {
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(link);
-        }, 100);
-    }
 });
