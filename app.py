@@ -279,15 +279,16 @@ def download_endcard(orientation, filename):
         
         # Create a file-like object
         file_obj = io.BytesIO(html_content.encode('utf-8'))
+        file_obj.seek(0)  # Reset file pointer to beginning
         
-        response = send_file(
+        return send_file(
             file_obj,
+            mimetype='text/html',
             as_attachment=True,
             download_name=output_filename,
-            mimetype='text/html'
+            max_age=0,
+            conditional=True
         )
-        response.headers['Content-Type'] = 'text/html; charset=utf-8'
-        return response
         
     except Exception as e:
         logger.error(f"Download error: {str(e)}")
