@@ -5,20 +5,24 @@ from flask import render_template
 
 logger = logging.getLogger(__name__)
 
-def convert_to_endcard(file_path, filename):
+def convert_to_endcard(file_path, filename, orientation='both'):
     """
-    Convert an uploaded image or video file into HTML endcards in both portrait and landscape formats.
+    Convert an uploaded image or video file into HTML endcard in the specified orientation.
     
     This implementation embeds the media file as base64 in the HTML, based on the provided converter code.
     
     Args:
         file_path (str): Path to the uploaded file
         filename (str): Original filename of the uploaded file
+        orientation (str): 'portrait', 'landscape', or 'both'
         
     Returns:
-        tuple: (portrait_html, landscape_html) - HTML content for both endcard formats
+        str or tuple: HTML content for the requested orientation(s)
+                     If orientation='both', returns (portrait_html, landscape_html)
+                     If orientation='portrait', returns portrait_html
+                     If orientation='landscape', returns landscape_html
     """
-    logger.debug(f"Converting {file_path} to endcards")
+    logger.debug(f"Converting {file_path} to endcard, orientation: {orientation}")
     
     # Get file extension to determine if it's an image or video
     file_extension = os.path.splitext(filename)[1].lower()
@@ -42,17 +46,28 @@ def convert_to_endcard(file_path, filename):
     if file_extension == '.png':
         mime_type = "image/png"
     
-    # Generate portrait endcard (9:16 aspect ratio)
-    portrait_html = generate_html_with_orientation_detection(
-        base64_data, mime_type, is_video, base_filename, 'portrait'
-    )
+    # Generate HTML based on requested orientation
+    if orientation == 'portrait' or orientation == 'both':
+        portrait_html = generate_html_with_orientation_detection(
+            base64_data, mime_type, is_video, base_filename, 'portrait'
+        )
+    else:
+        portrait_html = None
+        
+    if orientation == 'landscape' or orientation == 'both':
+        landscape_html = generate_html_with_orientation_detection(
+            base64_data, mime_type, is_video, base_filename, 'landscape'
+        )
+    else:
+        landscape_html = None
     
-    # Generate landscape endcard (16:9 aspect ratio)
-    landscape_html = generate_html_with_orientation_detection(
-        base64_data, mime_type, is_video, base_filename, 'landscape'
-    )
-    
-    return portrait_html, landscape_html
+    # Return based on requested orientation
+    if orientation == 'both':
+        return portrait_html, landscape_html
+    elif orientation == 'portrait':
+        return portrait_html
+    elif orientation == 'landscape':
+        return landscape_html
 
 def generate_html_with_orientation_detection(base64_data, mime_type, is_video, base_filename, orientation):
     """

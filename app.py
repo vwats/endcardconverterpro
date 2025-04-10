@@ -63,8 +63,9 @@ def history():
     endcards = Endcard.query.order_by(Endcard.created_at.desc()).all()
     return render_template('history.html', endcards=endcards)
 
-@app.route('/upload', methods=['POST'])
-def upload_file():
+@app.route('/upload/portrait', methods=['POST'])
+def upload_portrait():
+    """Handle portrait-oriented file upload"""
     # Check if there's a file in the request
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
@@ -97,19 +98,41 @@ def upload_file():
         file_extension = os.path.splitext(filename)[1].lower()
         file_type = 'video' if file_extension == '.mp4' else 'image'
         
-        # Generate endcards
-        portrait_html, landscape_html = convert_to_endcard(file_path, filename)
+        # Generate portrait endcard only
+        portrait_html = convert_to_endcard(file_path, filename, orientation='portrait')
         
-        # Save record to database
-        new_endcard = Endcard(
-            original_filename=filename,
-            file_type=file_type,
-            file_size=file_size,
-            portrait_created=bool(portrait_html),
-            landscape_created=bool(landscape_html)
-        )
-        db.session.add(new_endcard)
-        db.session.commit()
+        # Check if we need to create a new record or update an existing one
+        endcard_id = request.form.get('endcard_id')
+        
+        if endcard_id and endcard_id.isdigit():
+            # Update existing record
+            endcard = Endcard.query.get(int(endcard_id))
+            if endcard:
+                endcard.portrait_filename = filename
+                endcard.portrait_file_type = file_type
+                endcard.portrait_file_size = file_size
+                endcard.portrait_created = bool(portrait_html)
+                db.session.commit()
+            else:
+                # Create new record if ID not found
+                endcard = Endcard(
+                    portrait_filename=filename,
+                    portrait_file_type=file_type,
+                    portrait_file_size=file_size,
+                    portrait_created=bool(portrait_html)
+                )
+                db.session.add(endcard)
+                db.session.commit()
+        else:
+            # Create new record
+            endcard = Endcard(
+                portrait_filename=filename,
+                portrait_file_type=file_type,
+                portrait_file_size=file_size,
+                portrait_created=bool(portrait_html)
+            )
+            db.session.add(endcard)
+            db.session.commit()
         
         # Clean up the temporary file
         try:
@@ -117,12 +140,99 @@ def upload_file():
         except Exception as e:
             logger.error(f"Error removing temporary file: {e}")
             
-        # Return the HTML content for both formats
+        # Return the HTML content
         return jsonify({
             'portrait': portrait_html,
+            'filename': filename,
+            'endcard_id': endcard.id
+        })
+    
+    except Exception as e:
+        logger.error(f"Error processing file: {e}")
+        return jsonify({'error': f'Error processing file: {str(e)}'}), 500
+
+@app.route('/upload/landscape', methods=['POST'])
+def upload_landscape():
+    """Handle landscape-oriented file upload"""
+    # Check if there's a file in the request
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    
+    file = request.files['file']
+    
+    # Check if a file was selected
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    # Check file type
+    if not allowed_file(file.filename):
+        return jsonify({'error': f'Invalid file type. Allowed types: {", ".join(ALLOWED_EXTENSIONS)}'}), 400
+    
+    try:
+        # Generate a unique ID for this upload
+        upload_id = str(uuid.uuid4())
+        
+        # Save the file temporarily
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{upload_id}_{filename}")
+        file.save(file_path)
+        
+        logger.debug(f"File saved at {file_path}")
+        
+        # Get file size
+        file_size = os.path.getsize(file_path)
+        
+        # Determine file type (image or video)
+        file_extension = os.path.splitext(filename)[1].lower()
+        file_type = 'video' if file_extension == '.mp4' else 'image'
+        
+        # Generate landscape endcard only
+        landscape_html = convert_to_endcard(file_path, filename, orientation='landscape')
+        
+        # Check if we need to create a new record or update an existing one
+        endcard_id = request.form.get('endcard_id')
+        
+        if endcard_id and endcard_id.isdigit():
+            # Update existing record
+            endcard = Endcard.query.get(int(endcard_id))
+            if endcard:
+                endcard.landscape_filename = filename
+                endcard.landscape_file_type = file_type
+                endcard.landscape_file_size = file_size
+                endcard.landscape_created = bool(landscape_html)
+                db.session.commit()
+            else:
+                # Create new record if ID not found
+                endcard = Endcard(
+                    landscape_filename=filename,
+                    landscape_file_type=file_type,
+                    landscape_file_size=file_size,
+                    landscape_created=bool(landscape_html)
+                )
+                db.session.add(endcard)
+                db.session.commit()
+        else:
+            # Create new record
+            endcard = Endcard(
+                landscape_filename=filename,
+                landscape_file_type=file_type,
+                landscape_file_size=file_size,
+                landscape_created=bool(landscape_html)
+            )
+            db.session.add(endcard)
+            db.session.commit()
+        
+        # Clean up the temporary file
+        try:
+            os.remove(file_path)
+        except Exception as e:
+            logger.error(f"Error removing temporary file: {e}")
+            
+        # Return the HTML content
+        return jsonify({
             'landscape': landscape_html,
             'filename': filename,
-            'endcard_id': new_endcard.id
+            'endcard_id': endcard.id
         })
     
     except Exception as e:

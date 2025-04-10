@@ -33,46 +33,60 @@
                 <thead>
                     <tr>
                         <th scope="col">ID</th>
-                        <th scope="col">Filename</th>
-                        <th scope="col">Type</th>
-                        <th scope="col">Size</th>
-                        <th scope="col">Portrait</th>
-                        <th scope="col">Landscape</th>
+                        <th scope="col">Portrait File</th>
+                        <th scope="col">Landscape File</th>
                         <th scope="col">Date</th>
+                        <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for endcard in endcards %}
                     <tr>
                         <td>{{ endcard.id }}</td>
-                        <td>{{ endcard.original_filename }}</td>
-                        <td>
-                            {% if endcard.file_type == 'image' %}
-                            <span class="badge bg-info text-dark">
-                                <i class="fas fa-image me-1"></i>Image
-                            </span>
-                            {% else %}
-                            <span class="badge bg-primary">
-                                <i class="fas fa-video me-1"></i>Video
-                            </span>
-                            {% endif %}
-                        </td>
-                        <td>{{ (endcard.file_size / 1024)|round(1) }} KB</td>
                         <td>
                             {% if endcard.portrait_created %}
-                            <i class="fas fa-check-circle text-success"></i>
+                            <div class="d-flex align-items-center">
+                                {% if endcard.portrait_file_type == 'image' %}
+                                <span class="badge bg-info text-dark me-2">
+                                    <i class="fas fa-image"></i>
+                                </span>
+                                {% else %}
+                                <span class="badge bg-primary me-2">
+                                    <i class="fas fa-video"></i>
+                                </span>
+                                {% endif %}
+                                <span>{{ endcard.portrait_filename }}</span>
+                                <small class="ms-2 text-muted">{{ (endcard.portrait_file_size / 1024)|round(1) }} KB</small>
+                            </div>
                             {% else %}
-                            <i class="fas fa-times-circle text-danger"></i>
+                            <span class="text-muted"><i class="fas fa-times-circle me-2"></i>No portrait file</span>
                             {% endif %}
                         </td>
                         <td>
                             {% if endcard.landscape_created %}
-                            <i class="fas fa-check-circle text-success"></i>
+                            <div class="d-flex align-items-center">
+                                {% if endcard.landscape_file_type == 'image' %}
+                                <span class="badge bg-info text-dark me-2">
+                                    <i class="fas fa-image"></i>
+                                </span>
+                                {% else %}
+                                <span class="badge bg-primary me-2">
+                                    <i class="fas fa-video"></i>
+                                </span>
+                                {% endif %}
+                                <span>{{ endcard.landscape_filename }}</span>
+                                <small class="ms-2 text-muted">{{ (endcard.landscape_file_size / 1024)|round(1) }} KB</small>
+                            </div>
                             {% else %}
-                            <i class="fas fa-times-circle text-danger"></i>
+                            <span class="text-muted"><i class="fas fa-times-circle me-2"></i>No landscape file</span>
                             {% endif %}
                         </td>
                         <td>{{ endcard.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <a href="{{ url_for('index') }}?endcard_id={{ endcard.id }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit me-1"></i>Edit
+                            </a>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

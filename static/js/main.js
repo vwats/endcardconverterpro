@@ -2,9 +2,15 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // DOM elements
-    const uploadForm = document.getElementById('upload-form');
-    const fileInput = document.getElementById('file-input');
-    const uploadBtn = document.getElementById('upload-btn');
+    const portraitUploadForm = document.getElementById('portrait-upload-form');
+    const portraitFileInput = document.getElementById('portrait-file-input');
+    const portraitUploadBtn = document.getElementById('portrait-upload-btn');
+    
+    const landscapeUploadForm = document.getElementById('landscape-upload-form');
+    const landscapeFileInput = document.getElementById('landscape-file-input');
+    const landscapeUploadBtn = document.getElementById('landscape-upload-btn');
+    
+    const endcardIdField = document.getElementById('endcard-id');
     const loadingIndicator = document.getElementById('loading-indicator');
     const errorContainer = document.getElementById('error-container');
     const errorMessage = document.getElementById('error-message');
@@ -17,54 +23,71 @@ document.addEventListener('DOMContentLoaded', function() {
     // Store HTML content for downloads
     let portraitHTML = '';
     let landscapeHTML = '';
-    let originalFilename = '';
+    let portraitFilename = '';
+    let landscapeFilename = '';
+    let currentEndcardId = '';
 
-    // Handle form submission
-    uploadForm.addEventListener('submit', function(e) {
+    // Check URL parameters for endcard_id (for editing)
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const endcardId = urlParams.get('endcard_id');
+        if (endcardId) {
+            endcardIdField.value = endcardId;
+            currentEndcardId = endcardId;
+        }
+    };
+
+    // Handle portrait upload form submission
+    portraitUploadForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Reset UI state
+        // Reset UI state for portrait
         hideElement(errorContainer);
-        hideElement(resultsContainer);
         
-        const file = fileInput.files[0];
+        const file = portraitFileInput.files[0];
         
         // Validate file selection
         if (!file) {
-            showError('Please select a file to upload');
+            showError('Please select a file for portrait orientation');
             return;
         }
         
         // Validate file size (2.2MB max)
         if (file.size > 2.2 * 1024 * 1024) {
-            showError('File size exceeds the 2.2MB limit');
+            showError('Portrait file size exceeds the 2.2MB limit');
             return;
         }
         
         // Validate file type
         const validTypes = ['image/jpeg', 'image/png', 'video/mp4'];
         if (!validTypes.includes(file.type)) {
-            showError('Invalid file type. Please upload a JPEG, PNG, or MP4 file');
+            showError('Invalid portrait file type. Please upload a JPEG, PNG, or MP4 file');
             return;
         }
         
         // Show loading indicator
         showElement(loadingIndicator);
-        disableElement(uploadBtn);
+        disableElement(portraitUploadBtn);
+        disableElement(landscapeUploadBtn);
         
         // Create FormData and append file
         const formData = new FormData();
         formData.append('file', file);
         
+        // Add endcard_id if editing an existing record
+        if (endcardIdField.value) {
+            formData.append('endcard_id', endcardIdField.value);
+        }
+        
         // Send request to server
-        fetch('/upload', {
+        fetch('/upload/portrait', {
             method: 'POST',
             body: formData
         })
         .then(response => {
             if (!response.ok) {
                 return response.json().then(data => {
-                    throw new Error(data.error || 'Error uploading file');
+                    throw new Error(data.error || 'Error uploading portrait file');
                 });
             }
             return response.json();
@@ -72,15 +95,105 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             // Hide loading indicator
             hideElement(loadingIndicator);
-            enableElement(uploadBtn);
+            enableElement(portraitUploadBtn);
+            enableElement(landscapeUploadBtn);
             
             // Store HTML content for downloads
             portraitHTML = data.portrait;
-            landscapeHTML = data.landscape;
-            originalFilename = data.filename;
+            portraitFilename = data.filename;
             
-            // Update previews
+            // Store endcard ID
+            if (data.endcard_id) {
+                endcardIdField.value = data.endcard_id;
+                currentEndcardId = data.endcard_id;
+            }
+            
+            // Update preview
             updatePreview(portraitPreview, portraitHTML);
+            
+            // Show results
+            showElement(resultsContainer);
+        })
+        .catch(error => {
+            hideElement(loadingIndicator);
+            enableElement(portraitUploadBtn);
+            enableElement(landscapeUploadBtn);
+            showError(error.message);
+        });
+    });
+
+    // Handle landscape upload form submission
+    landscapeUploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Reset UI state for landscape
+        hideElement(errorContainer);
+        
+        const file = landscapeFileInput.files[0];
+        
+        // Validate file selection
+        if (!file) {
+            showError('Please select a file for landscape orientation');
+            return;
+        }
+        
+        // Validate file size (2.2MB max)
+        if (file.size > 2.2 * 1024 * 1024) {
+            showError('Landscape file size exceeds the 2.2MB limit');
+            return;
+        }
+        
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/png', 'video/mp4'];
+        if (!validTypes.includes(file.type)) {
+            showError('Invalid landscape file type. Please upload a JPEG, PNG, or MP4 file');
+            return;
+        }
+        
+        // Show loading indicator
+        showElement(loadingIndicator);
+        disableElement(portraitUploadBtn);
+        disableElement(landscapeUploadBtn);
+        
+        // Create FormData and append file
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // Add endcard_id if editing an existing record
+        if (endcardIdField.value) {
+            formData.append('endcard_id', endcardIdField.value);
+        }
+        
+        // Send request to server
+        fetch('/upload/landscape', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Error uploading landscape file');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Hide loading indicator
+            hideElement(loadingIndicator);
+            enableElement(portraitUploadBtn);
+            enableElement(landscapeUploadBtn);
+            
+            // Store HTML content for downloads
+            landscapeHTML = data.landscape;
+            landscapeFilename = data.filename;
+            
+            // Store endcard ID
+            if (data.endcard_id) {
+                endcardIdField.value = data.endcard_id;
+                currentEndcardId = data.endcard_id;
+            }
+            
+            // Update preview
             updatePreview(landscapePreview, landscapeHTML);
             
             // Show results
@@ -88,47 +201,54 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             hideElement(loadingIndicator);
-            enableElement(uploadBtn);
+            enableElement(portraitUploadBtn);
+            enableElement(landscapeUploadBtn);
             showError(error.message);
         });
     });
 
     // Handle download buttons
     downloadPortraitBtn.addEventListener('click', function() {
-        if (portraitHTML) {
-            downloadHTML('portrait', originalFilename, portraitHTML);
+        if (portraitHTML && portraitFilename) {
+            downloadHTML('portrait', portraitFilename, portraitHTML);
+        } else {
+            showError('No portrait endcard available. Please upload a portrait file first.');
         }
     });
 
     downloadLandscapeBtn.addEventListener('click', function() {
-        if (landscapeHTML) {
-            downloadHTML('landscape', originalFilename, landscapeHTML);
+        if (landscapeHTML && landscapeFilename) {
+            downloadHTML('landscape', landscapeFilename, landscapeHTML);
+        } else {
+            showError('No landscape endcard available. Please upload a landscape file first.');
         }
     });
 
     // Helper Functions
     function showElement(element) {
-        element.classList.remove('d-none');
+        if (element) element.classList.remove('d-none');
     }
 
     function hideElement(element) {
-        element.classList.add('d-none');
+        if (element) element.classList.add('d-none');
     }
 
     function enableElement(element) {
-        element.disabled = false;
+        if (element) element.disabled = false;
     }
 
     function disableElement(element) {
-        element.disabled = true;
+        if (element) element.disabled = true;
     }
 
     function showError(message) {
-        errorMessage.textContent = message;
+        if (errorMessage) errorMessage.textContent = message;
         showElement(errorContainer);
     }
 
     function updatePreview(iframeElement, htmlContent) {
+        if (!iframeElement || !htmlContent) return;
+        
         // Update the iframe content
         const iframe = iframeElement;
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
@@ -139,6 +259,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function downloadHTML(orientation, filename, htmlContent) {
+        if (!filename || !htmlContent) return;
+        
         // Create the download URL with the HTML content
         const baseFilename = filename.split('.')[0];
         const downloadUrl = `/download/${orientation}/${filename}?html=${encodeURIComponent(htmlContent)}`;
