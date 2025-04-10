@@ -281,9 +281,12 @@ window.onload = function() {
                         state: 'ready',
                         getState: function() { return this.state; },
                         addEventListener: function(event, callback) {
-                            console.log('[MRAID] Event:', event);
+                            console.debug('[MRAID] Event:', event);
                             if (event === 'ready') {
-                                setTimeout(callback, 0);
+                                setTimeout(() => {
+                                    callback();
+                                    console.log('[MRAID] Ready Fired');
+                                }, 0);
                             }
                             if (event === 'stateChange') {
                                 callback(this.state);
@@ -307,6 +310,8 @@ window.onload = function() {
                         console.log('[MRAID] DOM Ready, dispatching mraidready');
                         window.dispatchEvent(new Event('mraidready'));
                     });
+                    // Debug hook for MRAID inspection
+                    window.__mraidDebug = () => console.dir(window.mraid);
                     </script>
                 </head>
                 <body style="margin:0;padding:0;background:#000;">
