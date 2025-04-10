@@ -215,22 +215,17 @@ window.onload = function() {
         });
     });
 
-    // Handle download buttons
-    downloadPortraitBtn.addEventListener('click', function() {
-        if (portraitHTML && portraitFilename) {
-            downloadHTML('portrait', portraitFilename, portraitHTML);
-        } else {
-            showError('No portrait endcard available. Please upload a portrait file first.');
-        }
-    });
-
-    downloadLandscapeBtn.addEventListener('click', function() {
-        if (landscapeHTML && landscapeFilename) {
-            downloadHTML('landscape', landscapeFilename, landscapeHTML);
-        } else {
-            showError('No landscape endcard available. Please upload a landscape file first.');
-        }
-    });
+    // Handle download button
+    const downloadBtn = document.getElementById('download-btn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', function() {
+            if (portraitHTML && portraitFilename) {
+                downloadHTML('portrait', portraitFilename, portraitHTML);
+            } else {
+                showError('No endcard available. Please upload a file first.');
+            }
+        });
+    }
 
     // Helper Functions
     function showElement(element) {
