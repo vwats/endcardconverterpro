@@ -10,83 +10,122 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container py-4">
-        <header class="pb-3 mb-4 border-bottom">
+        <header class="py-4 mb-5 border-bottom border-dark">
             <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center text-white">
-                    <i class="fas fa-crop-alt fs-4 me-3"></i>
-                    <h1 class="fs-4">EndCard Converter Pro</h1>
+                <div class="d-flex align-items-center">
+                    <div class="me-3 p-2 rounded-circle" style="background: rgba(99, 102, 241, 0.1);">
+                        <i class="fas fa-crop-alt fs-4 text-primary"></i>
+                    </div>
+                    <h1 class="gradient-text fs-3 m-0">EndCard Converter Pro</h1>
+                    <span class="badge-pro ms-2">2.0</span>
                 </div>
-                <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-history me-2"></i>View History
-                </a>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-history me-2"></i>View History
+                    </a>
+                    <a href="{{ url_for('upgrade') }}" class="btn btn-warning">
+                        <i class="fas fa-crown me-2"></i>Upgrade
+                    </a>
+                </div>
             </div>
         </header>
 
-        <div class="p-4 mb-4 bg-body-tertiary rounded-3">
-            <div class="container-fluid">
-                <h2 class="fs-4 mb-3">Upload Media Files</h2>
-                <p class="mb-4">Upload separate files for portrait and landscape HTML endcards.</p>
-                
-                <!-- Hidden endcard ID field for editing existing records -->
-                <input type="hidden" id="endcard-id" value="">
-                
-                <!-- Combined Upload Form -->
-                <form id="combined-upload-form" class="mb-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class="fas fa-upload me-2"></i>Upload Media Files</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
+        <div class="row mb-5">
+            <div class="col-lg-8">
+                <!-- Main conversion card -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h2 class="fs-4 m-0"><i class="fas fa-magic text-primary me-2"></i>Create HTML Endcards</h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead mb-4">Transform your media into interactive HTML endcards for mobile ads. Upload files for portrait and landscape orientations.</p>
+                        
+                        <!-- Hidden endcard ID field for editing existing records -->
+                        <input type="hidden" id="endcard-id" value="">
+                        
+                        <!-- Combined Upload Form -->
+                        <form id="combined-upload-form" class="mb-4">                            
+                            <div class="row g-4">
+                                <div class="col-md-6">
                                     <!-- Portrait File Upload -->
-                                    <div class="mb-3">
-                                        <label for="portrait-file-input" class="form-label">
-                                            <i class="fas fa-mobile-alt me-2"></i>Portrait Media (9:16)
-                                        </label>
-                                        <input type="file" class="form-control" id="portrait-file-input" accept=".jpg,.jpeg,.png,.mp4">
-                                        <div class="form-text">Max: 2.2MB | Formats: JPEG, PNG, MP4</div>
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="mb-3 d-flex align-items-center">
+                                                <i class="fas fa-mobile-alt text-primary me-2"></i>
+                                                Portrait Format
+                                                <span class="ms-2 badge bg-dark">9:16</span>
+                                            </h5>
+                                            <div class="mb-3">
+                                                <label for="portrait-file-input" class="form-label small text-secondary">Select a file</label>
+                                                <input type="file" class="form-control" id="portrait-file-input" accept=".jpg,.jpeg,.png,.mp4">
+                                                <div class="form-text small mt-2"><i class="fas fa-info-circle me-1"></i> Max: 2.2MB | JPEG, PNG, MP4</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6">
                                     <!-- Landscape File Upload -->
-                                    <div class="mb-3">
-                                        <label for="landscape-file-input" class="form-label">
-                                            <i class="fas fa-desktop me-2"></i>Landscape Media (16:9)
-                                        </label>
-                                        <input type="file" class="form-control" id="landscape-file-input" accept=".jpg,.jpeg,.png,.mp4">
-                                        <div class="form-text">Max: 2.2MB | Formats: JPEG, PNG, MP4</div>
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="mb-3 d-flex align-items-center">
+                                                <i class="fas fa-desktop text-primary me-2"></i>
+                                                Landscape Format
+                                                <span class="ms-2 badge bg-dark">16:9</span>
+                                            </h5>
+                                            <div class="mb-3">
+                                                <label for="landscape-file-input" class="form-label small text-secondary">Select a file</label>
+                                                <input type="file" class="form-control" id="landscape-file-input" accept=".jpg,.jpeg,.png,.mp4">
+                                                <div class="form-text small mt-2"><i class="fas fa-info-circle me-1"></i> Max: 2.2MB | JPEG, PNG, MP4</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="d-grid gap-2 col-md-6 mx-auto mt-3">
-                                <button type="submit" class="btn btn-primary" id="combined-upload-btn">
-                                    <i class="fas fa-sync me-2"></i>Convert Files
+                            <div class="d-grid gap-2 col-md-8 mx-auto mt-4">
+                                <button type="submit" class="btn btn-primary py-3" id="combined-upload-btn">
+                                    <i class="fas fa-bolt me-2"></i>Generate HTML Endcards
                                 </button>
                             </div>
-                        </div>
+                        </form>
                     </div>
-                </form>
-                
-                <div class="card bg-dark mb-3">
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Features card -->
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h3 class="fs-5 m-0"><i class="fas fa-star text-warning me-2"></i>Features</h3>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title">Quick Guide</h5>
-                        <ul class="list-group list-group-flush bg-transparent">
-                            <li class="list-group-item bg-transparent">Preview each endcard after upload</li>
-                            <li class="list-group-item bg-transparent">Download the HTML files individually</li>
-                            <li class="list-group-item bg-transparent">
-                                <strong><i class="fas fa-coins text-warning me-2"></i>Credit System:</strong> 
-                                One credit per conversion. Get more credits to continue converting!
-                                <a href="/upgrade" class="btn btn-sm btn-warning ms-2">
-                                    <i class="fas fa-plus me-1"></i>Buy Credits
-                                </a>
-                            </li>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check-circle"></i> Create HTML endcards from media files</li>
+                            <li><i class="fas fa-check-circle"></i> Support for both portrait and landscape formats</li>
+                            <li><i class="fas fa-check-circle"></i> Compatible with images (JPEG, PNG) and videos (MP4)</li>
+                            <li><i class="fas fa-check-circle"></i> Instant preview in browser</li>
+                            <li><i class="fas fa-check-circle"></i> Download HTML files for use in ad campaigns</li>
+                            <li><i class="fas fa-check-circle"></i> Conversion history tracking</li>
                         </ul>
+                        
+                        <div class="mt-4 p-3 rounded" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2);">
+                            <h6 class="d-flex align-items-center">
+                                <i class="fas fa-coins text-warning me-2"></i>
+                                Credit System
+                            </h6>
+                            <p class="small mb-2">One credit per conversion. Get more credits to continue converting!</p>
+                            <a href="/upgrade" class="btn btn-warning w-100">
+                                <i class="fas fa-unlock-alt me-1"></i> Buy Credits
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -94,58 +133,99 @@
 
         <!-- Loading Indicator -->
         <div id="loading-indicator" class="text-center py-5 d-none">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+            <div class="card p-4 loading-pulse">
+                <div class="d-flex flex-column align-items-center">
+                    <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5 class="mb-0">Converting your files...</h5>
+                    <p class="text-secondary mt-2">This may take a few moments</p>
+                </div>
             </div>
-            <p class="mt-2">Converting your file...</p>
         </div>
 
         <!-- Error Display -->
         <div id="error-container" class="alert alert-danger d-none" role="alert">
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            <span id="error-message"></span>
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-circle fs-4 me-3"></i>
+                <div>
+                    <h5 class="alert-heading mb-1">Error Occurred</h5>
+                    <span id="error-message"></span>
+                </div>
+            </div>
         </div>
 
         <!-- Results Section (Hidden by default) -->
-        <div class="text-center mb-4">
-            <button id="download-both" class="btn btn-primary">
-                <i class="fas fa-download me-1"></i> Download Both Versions
-            </button>
-        </div>
         <div id="results-container" class="d-none">
-            <div class="row gx-4 gy-4">
-                <!-- Portrait Endcard -->
-                <div class="col-lg-6">
-                    <div class="card h-100">
-                        <div class="card-header">
-                            <h3 class="fs-5 mb-0">Portrait Endcard (9:16)</h3>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="fs-5 m-0"><i class="fas fa-check-circle text-success me-2"></i>Your HTML Endcards</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row gx-4 gy-4">
+                        <!-- Portrait Endcard -->
+                        <div class="col-lg-6">
+                            <div class="card h-100 bg-dark">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0 fs-6">Portrait Endcard</h5>
+                                    <button id="download-portrait-btn" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-download me-1"></i> Download
+                                    </button>
+                                </div>
+                                <div class="card-body d-flex flex-column align-items-center">
+                                    <div class="preview-container portrait-container mb-3">
+                                        <iframe id="portrait-preview" class="preview-frame" src="about:blank"></iframe>
+                                    </div>
+                                    <div class="text-center mt-2">
+                                        <span class="badge bg-dark">9:16 Ratio</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-body d-flex justify-content-center">
-                            <div class="preview-container portrait-container">
-                                <iframe id="portrait-preview" class="preview-frame" src="about:blank"></iframe>
+                        
+                        <!-- Landscape Endcard -->
+                        <div class="col-lg-6">
+                            <div class="card h-100 bg-dark">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0 fs-6">Landscape Endcard</h5>
+                                    <button id="download-landscape-btn" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-download me-1"></i> Download
+                                    </button>
+                                </div>
+                                <div class="card-body d-flex flex-column align-items-center">
+                                    <div class="preview-container landscape-container mb-3">
+                                        <iframe id="landscape-preview" class="preview-frame" src="about:blank"></iframe>
+                                    </div>
+                                    <div class="text-center mt-2">
+                                        <span class="badge bg-dark">16:9 Ratio</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Landscape Endcard -->
-                <div class="col-lg-6">
-                    <div class="card h-100">
-                        <div class="card-header">
-                            <h3 class="fs-5 mb-0">Landscape Endcard (16:9)</h3>
-                        </div>
-                        <div class="card-body d-flex justify-content-center">
-                            <div class="preview-container landscape-container">
-                                <iframe id="landscape-preview" class="preview-frame" src="about:blank"></iframe>
-                            </div>
-                        </div>
+                    
+                    <div class="d-grid col-md-6 mx-auto mt-4">
+                        <button id="download-both-btn" class="btn btn-lg btn-primary">
+                            <i class="fas fa-download me-2"></i> Download Both Versions
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <footer class="pt-3 mt-4 text-body-secondary border-top">
-            &copy; 2023 EndCard Converter Pro
+        <footer class="py-4 mt-5 text-center border-top border-dark">
+            <div class="row">
+                <div class="col-md-6 text-md-start">
+                    <p class="mb-0">&copy; 2025 EndCard Converter Pro</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">
+                        <a href="/upgrade" class="text-decoration-none text-secondary me-3">Upgrade</a>
+                        <a href="/history" class="text-decoration-none text-secondary me-3">History</a>
+                        <a href="#" class="text-decoration-none text-secondary">Support</a>
+                    </p>
+                </div>
+            </div>
         </footer>
     </div>
 

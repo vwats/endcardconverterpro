@@ -14,57 +14,45 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultsContainer = document.getElementById('results-container');
     const portraitPreview = document.getElementById('portrait-preview');
     const landscapePreview = document.getElementById('landscape-preview');
-    const downloadBothBtn = document.getElementById('download-both');
+    const downloadPortraitBtn = document.getElementById('download-portrait-btn');
+    const downloadLandscapeBtn = document.getElementById('download-landscape-btn');
+    const downloadBothBtn = document.getElementById('download-both-btn');
 
     // Store HTML content for downloads
     let portraitHTML = '';
     let landscapeHTML = '';
     let portraitFilename = '';
     let landscapeFilename = '';
+    let currentEndcardId = '';
 
     // Function to download both versions
     async function downloadBothVersions() {
         try {
-            if (portraitHTML && landscapeHTML) {
-                const portraitBlob = new Blob([portraitHTML], { type: 'text/html' });
-                const landscapeBlob = new Blob([landscapeHTML], { type: 'text/html' });
-                
-                const portraitUrl = window.URL.createObjectURL(portraitBlob);
-                const landscapeUrl = window.URL.createObjectURL(landscapeBlob);
-                
-                // Create and trigger portrait download
-                const portraitLink = document.createElement('a');
-                portraitLink.href = portraitUrl;
-                portraitLink.download = portraitFilename || 'endcard_portrait.html';
-                document.body.appendChild(portraitLink);
-                portraitLink.click();
+            // Check if both endcards are available
+            let hasPortrait = portraitHTML && portraitFilename;
+            let hasLandscape = landscapeHTML && landscapeFilename;
+            
+            if (hasPortrait && hasLandscape) {
+                // Download both
+                downloadHTML('portrait', portraitFilename, portraitHTML);
                 
                 // Small delay between downloads
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
-                // Create and trigger landscape download
-                const landscapeLink = document.createElement('a');
-                landscapeLink.href = landscapeUrl;
-                landscapeLink.download = landscapeFilename || 'endcard_landscape.html';
-                document.body.appendChild(landscapeLink);
-                landscapeLink.click();
-                
-                // Cleanup
-                window.URL.revokeObjectURL(portraitUrl);
-                window.URL.revokeObjectURL(landscapeUrl);
-                document.body.removeChild(portraitLink);
-                document.body.removeChild(landscapeLink);
+                downloadHTML('landscape', landscapeFilename, landscapeHTML);
+            } else if (hasPortrait) {
+                downloadHTML('portrait', portraitFilename, portraitHTML);
+                showError('Only portrait endcard is available. Please upload a landscape file as well for both formats.');
+            } else if (hasLandscape) {
+                downloadHTML('landscape', landscapeFilename, landscapeHTML);
+                showError('Only landscape endcard is available. Please upload a portrait file as well for both formats.');
+            } else {
+                showError('No endcards available. Please upload files for conversion first.');
             }
         } catch (error) {
             console.error('Download failed:', error);
         }
     }
-
-    // Add click event listener for download button
-    if (downloadBothBtn) {
-        downloadBothBtn.addEventListener('click', downloadBothVersions);
-    }
-    let currentEndcardId = '';
 
     // Initialize MRAID and handle events
 if (typeof mraid !== 'undefined') {
@@ -231,6 +219,9 @@ window.onload = function() {
             showError('No landscape endcard available. Please upload a landscape file first.');
         }
     });
+    
+    // Download both button handler
+    downloadBothBtn.addEventListener('click', downloadBothVersions);
 
     // Helper Functions
     function showElement(element) {
