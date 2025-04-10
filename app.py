@@ -283,6 +283,9 @@ def download_endcard(orientation, filename):
                 "Content-Type": "text/html; charset=utf-8"
             }
         )
+    except Exception as e:
+        logger.error(f"Download error: {str(e)}")
+        return jsonify({'error': 'Failed to generate download'}), 500
 
 # Error handler for file too large
 @app.errorhandler(413)
