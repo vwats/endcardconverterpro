@@ -258,6 +258,17 @@ window.onload = function() {
             const url = URL.createObjectURL(blob);
             iframeElement.src = url;
 
+            // Add rotation class if needed
+            if (iframeElement.classList.contains('rotated')) {
+                iframeElement.style.transform = 'rotate(90deg)';
+                iframeElement.style.width = '100vh';
+                iframeElement.style.height = '100vw';
+            } else {
+                iframeElement.style.transform = '';
+                iframeElement.style.width = '100%';
+                iframeElement.style.height = '100%';
+            }
+
             // Cleanup URL after iframe loads
             iframeElement.onload = () => {
                 URL.revokeObjectURL(url);
@@ -265,6 +276,20 @@ window.onload = function() {
         } catch (error) {
             console.error("Preview update failed:", error);
         }
+    }
+
+    // Add rotation toggle functionality
+    const rotateBtn = document.getElementById('rotate-btn');
+    if (rotateBtn) {
+        rotateBtn.addEventListener('click', function() {
+            const previewFrames = [portraitPreview, landscapePreview];
+            previewFrames.forEach(frame => {
+                if (frame) {
+                    frame.classList.toggle('rotated');
+                    updatePreview(frame, frame === portraitPreview ? portraitHTML : landscapeHTML);
+                }
+            });
+        });
     }
 
     function downloadHTML(orientation, filename, htmlContent) {
