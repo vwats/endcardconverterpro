@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,6 +12,15 @@
             height: 100%;
             overflow: hidden;
         }
+        #clickArea {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            cursor: pointer;
+        }
         .endcard {
             width: 100%;
             height: 100%;
@@ -23,22 +33,24 @@
 </head>
 <body>
     <div class="endcard"></div>
+    <div id="clickArea"></div>
     <script>
+        function mraidIsReady() {
+            mraid.useCustomClose(true);
+        }
+
+        document.getElementById('clickArea').addEventListener('click', function() {
+            if (typeof mraid !== 'undefined') {
+                mraid.open('https://p.applov.in/playablePreview?create=1&qr=1');
+            }
+        });
+
         if (typeof mraid !== 'undefined') {
             if (mraid.getState() === 'loading') {
                 mraid.addEventListener('ready', mraidIsReady);
             } else {
                 mraidIsReady();
             }
-        }
-
-        function mraidIsReady() {
-            mraid.useCustomClose(true);
-            document.body.addEventListener('click', function() {
-                if (typeof mraid !== 'undefined') {
-                    mraid.open('https://p.applov.in/playablePreview?create=1&qr=1');
-                }
-            });
         }
     </script>
 </body>
