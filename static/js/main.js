@@ -3,7 +3,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     // DOM elements
     const combinedUploadForm = document.getElementById('combined-upload-form');
-    const mediaFileInput = document.getElementById('media-file-input');
+    const portraitFileInput = document.getElementById('portrait-file-input');
+    const landscapeFileInput = document.getElementById('landscape-file-input');
     const combinedUploadBtn = document.getElementById('combined-upload-btn');
     const clearFileBtn = document.getElementById('clear-file-btn');
     const previewArea = document.querySelector('.preview-area');
@@ -28,32 +29,37 @@ document.addEventListener('DOMContentLoaded', function() {
     let uploadedFilename = '';
     let currentEndcardId = '';
 
-    // File input change handler
-    mediaFileInput.addEventListener('change', function(e) {
-        const file = mediaFileInput.files[0];
-        if (!file) {
-            return;
-        }
+    // File input change handlers
+    [portraitFileInput, landscapeFileInput].forEach(input => {
+        input.addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (!file) return;
 
-        // Preview the file
-        const isVideo = file.type.startsWith('video/');
-        const fileURL = URL.createObjectURL(file);
-        
-        if (isVideo) {
-            // Set video source and show video preview
-            videoPreview.src = fileURL;
-            showElement(videoPreview);
-            hideElement(mediaPreview);
-        } else {
-            // Set image source and show image preview
-            mediaPreview.src = fileURL;
-            showElement(mediaPreview);
-            hideElement(videoPreview);
-        }
-        
-        // Show preview area and enable generate button
-        showElement(previewArea);
-        enableElement(combinedUploadBtn);
+            // Preview the file (using first file for preview)
+            if (this === portraitFileInput || !landscapeFileInput.files[0]) {
+                const isVideo = file.type.startsWith('video/');
+                const fileURL = URL.createObjectURL(file);
+                
+                if (isVideo) {
+                    videoPreview.src = fileURL;
+                    showElement(videoPreview);
+                    hideElement(mediaPreview);
+                } else {
+                    mediaPreview.src = fileURL;
+                    showElement(mediaPreview);
+                    hideElement(videoPreview);
+                }
+                
+                showElement(previewArea);
+            }
+            
+            // Enable generate button if both files are selected
+            if (portraitFileInput.files[0] && landscapeFileInput.files[0]) {
+                enableElement(combinedUploadBtn);
+            } else {
+                disableElement(combinedUploadBtn);
+            }
+        });
     });
 
     // Clear file button handler
@@ -138,26 +144,35 @@ document.addEventListener('DOMContentLoaded', function() {
         // Reset UI state
         hideElement(errorContainer);
 
-        const mediaFile = mediaFileInput.files[0];
+        const portraitFile = portraitFileInput.files[0];
+        const landscapeFile = landscapeFileInput.files[0];
 
-        // Validate file is selected
-        if (!mediaFile) {
-            showError('Please select a file for conversion');
+        // Validate files are selected
+        if (!portraitFile || !landscapeFile) {
+            showError('Please select both portrait and landscape files');
             return;
         }
 
         const MAX_FILE_SIZE = 2.2 * 1024 * 1024; // 2.2MB
         const validTypes = ['image/jpeg', 'image/png', 'video/mp4'];
 
-        // Check file size
-        if (mediaFile.size > MAX_FILE_SIZE) {
-            showError(`File size (${(mediaFile.size / (1024 * 1024)).toFixed(2)}MB) exceeds the 2.2MB limit`);
+        // Check file sizes
+        if (portraitFile.size > MAX_FILE_SIZE) {
+            showError(`Portrait file size (${(portraitFile.size / (1024 * 1024)).toFixed(2)}MB) exceeds the 2.2MB limit`);
+            return;
+        }
+        if (landscapeFile.size > MAX_FILE_SIZE) {
+            showError(`Landscape file size (${(landscapeFile.size / (1024 * 1024)).toFixed(2)}MB) exceeds the 2.2MB limit`);
             return;
         }
 
-        // Check file type
-        if (!validTypes.includes(mediaFile.type)) {
-            showError('Invalid file type. Please upload a JPEG, PNG, or MP4 file');
+        // Check file types
+        if (!validTypes.includes(portraitFile.type)) {
+            showError('Invalid portrait file type. Please upload a JPEG, PNG, or MP4 file');
+            return;
+        }
+        if (!validTypes.includes(landscapeFile.type)) {
+            showError('Invalid landscape file type. Please upload a JPEG, PNG, or MP4 file');
             return;
         }
 
@@ -167,7 +182,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Create FormData and append file
         const formData = new FormData();
-        formData.append('media_file', mediaFile);
+        formData.append('portrait_file', portraitFile);
+        formData.append('landscape_file', landscapeFile);
 
         // Add endcard_id if editing an existing record
         if (endcardIdField.value) {

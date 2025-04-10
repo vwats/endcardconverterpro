@@ -46,10 +46,10 @@
                     </div>
                     <div class="card-body">
                         <p class="lead mb-4">Transform your media into a single rotatable HTML endcard that works in both portrait and landscape orientations.</p>
-                        
+
                         <!-- Hidden endcard ID field for editing existing records -->
                         <input type="hidden" id="endcard-id" value="">
-                        
+
                         <!-- Upload Form -->
                         <form id="combined-upload-form" class="mb-4">
                             <div class="card bg-gradient-dark border-0 text-white mb-4">
@@ -65,7 +65,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="row justify-content-center">
                                 <div class="col-md-10">
                                     <!-- Media File Upload -->
@@ -74,17 +74,21 @@
                                             <h5 class="mb-3 d-flex align-items-center">
                                                 <i class="fas fa-sync-alt text-primary me-2"></i>
                                                 Rotatable Format
-                                                <div class="ms-2 d-flex gap-1">
-                                                    <span class="badge bg-dark">9:16</span>
-                                                    <span class="badge bg-dark">16:9</span>
-                                                </div>
                                             </h5>
                                             <div class="mb-3">
-                                                <label for="media-file-input" class="form-label small text-secondary">Upload your image or video</label>
-                                                <input type="file" class="form-control" id="media-file-input" name="media_file" accept=".jpg,.jpeg,.png,.mp4">
-                                                <div class="form-text small mt-2"><i class="fas fa-info-circle me-1"></i> Max: 2.2MB | JPEG, PNG, MP4</div>
+                                                <label for="portrait-file-input" class="form-label small text-secondary d-flex align-items-center">
+                                                    Portrait View <span class="badge bg-dark ms-2">9:16</span>
+                                                </label>
+                                                <input type="file" class="form-control mb-3" id="portrait-file-input" name="portrait_file" accept=".jpg,.jpeg,.png,.mp4">
+
+                                                <label for="landscape-file-input" class="form-label small text-secondary d-flex align-items-center">
+                                                    Landscape View <span class="badge bg-dark ms-2">16:9</span>
+                                                </label>
+                                                <input type="file" class="form-control" id="landscape-file-input" name="landscape_file" accept=".jpg,.jpeg,.png,.mp4">
+
+                                                <div class="form-text small mt-2"><i class="fas fa-info-circle me-1"></i> Max: 2.2MB per file | JPEG, PNG, MP4</div>
                                             </div>
-                                            
+
                                             <div class="text-center preview-area mt-4 mb-3 d-none">
                                                 <div class="preview-wrapper mx-auto mb-3">
                                                     <img id="media-preview" class="img-fluid rounded" style="max-height: 180px;" />
@@ -98,7 +102,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="d-grid gap-2 col-md-8 mx-auto mt-4">
                                 <button type="submit" class="btn btn-primary py-3" id="combined-upload-btn" disabled>
                                     <i class="fas fa-wand-magic-sparkles me-2"></i>Generate Rotatable Endcard
@@ -108,7 +112,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-lg-4">
                 <!-- Features card -->
                 <div class="card h-100">
@@ -124,7 +128,7 @@
                             <li><i class="fas fa-check-circle"></i> Optimized file size (max 2.2MB)</li>
                             <li><i class="fas fa-check-circle"></i> Conversion history tracking</li>
                         </ul>
-                        
+
                         <div class="mt-4 p-3 rounded" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2);">
                             <h6 class="d-flex align-items-center">
                                 <i class="fas fa-coins text-warning me-2"></i>
@@ -207,7 +211,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="alert alert-info mt-4">
                                 <div class="d-flex">
                                     <div class="me-3">
