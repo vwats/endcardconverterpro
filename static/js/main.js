@@ -252,17 +252,13 @@ window.onload = function() {
     function updatePreview(iframeElement, htmlContent) {
         if (!iframeElement || !htmlContent) return;
 
-        // Create a blob URL for the HTML content
-        const blob = new Blob([htmlContent], {type: 'text/html'});
-        const url = URL.createObjectURL(blob);
+        // Get the iframe document
+        const iframeDoc = iframeElement.contentDocument || iframeElement.contentWindow.document;
         
-        // Set iframe src to the blob URL
-        iframeElement.src = url;
-        
-        // Clean up the blob URL after the iframe loads
-        iframeElement.onload = () => {
-            URL.revokeObjectURL(url);
-        };
+        // Write the HTML content directly
+        iframeDoc.open();
+        iframeDoc.write(htmlContent);
+        iframeDoc.close();
 }
 
     function downloadHTML(orientation, filename, htmlContent) {
