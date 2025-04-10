@@ -1,0 +1,70 @@
+/* Custom styles for EndCard Converter Pro */
+
+/* Preview containers */
+.preview-container {
+    background-color: var(--bs-dark);
+    border: 1px solid var(--bs-gray-700);
+    overflow: hidden;
+    position: relative;
+}
+
+.portrait-container {
+    width: 270px;
+    height: 480px; /* 9:16 aspect ratio */
+}
+
+.landscape-container {
+    width: 480px;
+    height: 270px; /* 16:9 aspect ratio */
+}
+
+/* Responsive adjustment for mobile */
+@media (max-width: 768px) {
+    .portrait-container {
+        width: 180px;
+        height: 320px;
+    }
+    
+    .landscape-container {
+        width: 320px;
+        height: 180px;
+    }
+}
+
+/* Preview iframes */
+.preview-frame {
+    border: none;
+    width: 100%;
+    height: 100%;
+}
+
+/* Upload form styling */
+#upload-form {
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    background-color: var(--bs-dark);
+}
+
+/* Add a subtle hover effect to buttons */
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+/* Customized file input */
+.form-control[type="file"] {
+    padding: 0.5rem;
+    cursor: pointer;
+    background-color: var(--bs-gray-800);
+}
+
+/* Error container animations */
+#error-container {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
