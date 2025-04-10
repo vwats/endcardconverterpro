@@ -3,151 +3,163 @@
 document.addEventListener('DOMContentLoaded', function() {
     // DOM elements
     const combinedUploadForm = document.getElementById('combined-upload-form');
-    const portraitFileInput = document.getElementById('portrait-file-input');
-    const landscapeFileInput = document.getElementById('landscape-file-input');
+    const mediaFileInput = document.getElementById('media-file-input');
     const combinedUploadBtn = document.getElementById('combined-upload-btn');
+    const clearFileBtn = document.getElementById('clear-file-btn');
+    const previewArea = document.querySelector('.preview-area');
+    const mediaPreview = document.getElementById('media-preview');
+    const videoPreview = document.getElementById('video-preview');
 
+    // Results and preview elements
     const endcardIdField = document.getElementById('endcard-id');
     const loadingIndicator = document.getElementById('loading-indicator');
     const errorContainer = document.getElementById('error-container');
     const errorMessage = document.getElementById('error-message');
     const resultsContainer = document.getElementById('results-container');
-    const portraitPreview = document.getElementById('portrait-preview');
-    const landscapePreview = document.getElementById('landscape-preview');
-    const downloadPortraitBtn = document.getElementById('download-portrait-btn');
-    const downloadLandscapeBtn = document.getElementById('download-landscape-btn');
-    const downloadBothBtn = document.getElementById('download-both-btn');
+    const endcardPreview = document.getElementById('endcard-preview');
+    const previewContainer = document.getElementById('preview-container');
+    const orientationStatus = document.getElementById('orientation-status');
+    const rotatePreviewBtn = document.getElementById('rotate-preview-btn');
+    const downloadEndcardBtn = document.getElementById('download-endcard-btn');
 
-    // Store HTML content for downloads
-    let portraitHTML = '';
-    let landscapeHTML = '';
-    let portraitFilename = '';
-    let landscapeFilename = '';
+    // State variables
+    let currentOrientation = 'portrait'; // 'portrait' or 'landscape'
+    let htmlContent = '';
+    let uploadedFilename = '';
     let currentEndcardId = '';
 
-    // Function to download both versions
-    async function downloadBothVersions() {
-        try {
-            // Check if both endcards are available
-            let hasPortrait = portraitHTML && portraitFilename;
-            let hasLandscape = landscapeHTML && landscapeFilename;
-            
-            if (hasPortrait && hasLandscape) {
-                // Download both
-                downloadHTML('portrait', portraitFilename, portraitHTML);
-                
-                // Small delay between downloads
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                downloadHTML('landscape', landscapeFilename, landscapeHTML);
-            } else if (hasPortrait) {
-                downloadHTML('portrait', portraitFilename, portraitHTML);
-                showError('Only portrait endcard is available. Please upload a landscape file as well for both formats.');
-            } else if (hasLandscape) {
-                downloadHTML('landscape', landscapeFilename, landscapeHTML);
-                showError('Only landscape endcard is available. Please upload a portrait file as well for both formats.');
-            } else {
-                showError('No endcards available. Please upload files for conversion first.');
-            }
-        } catch (error) {
-            console.error('Download failed:', error);
+    // File input change handler
+    mediaFileInput.addEventListener('change', function(e) {
+        const file = mediaFileInput.files[0];
+        if (!file) {
+            return;
+        }
+
+        // Preview the file
+        const isVideo = file.type.startsWith('video/');
+        const fileURL = URL.createObjectURL(file);
+        
+        if (isVideo) {
+            // Set video source and show video preview
+            videoPreview.src = fileURL;
+            showElement(videoPreview);
+            hideElement(mediaPreview);
+        } else {
+            // Set image source and show image preview
+            mediaPreview.src = fileURL;
+            showElement(mediaPreview);
+            hideElement(videoPreview);
+        }
+        
+        // Show preview area and enable generate button
+        showElement(previewArea);
+        enableElement(combinedUploadBtn);
+    });
+
+    // Clear file button handler
+    clearFileBtn.addEventListener('click', function() {
+        mediaFileInput.value = '';
+        hideElement(previewArea);
+        disableElement(combinedUploadBtn);
+    });
+
+    // Rotate preview button handler
+    rotatePreviewBtn.addEventListener('click', function() {
+        toggleOrientation();
+    });
+
+    // Download endcard button handler
+    downloadEndcardBtn.addEventListener('click', function() {
+        if (htmlContent && uploadedFilename) {
+            downloadHTML('rotatable', uploadedFilename, htmlContent);
+        } else {
+            showError('No endcard available. Please upload a file and generate an endcard first.');
+        }
+    });
+
+    // Toggle orientation function
+    function toggleOrientation() {
+        if (currentOrientation === 'portrait') {
+            currentOrientation = 'landscape';
+            previewContainer.classList.remove('portrait-container');
+            previewContainer.classList.add('landscape-container');
+            orientationStatus.textContent = 'Landscape Mode';
+        } else {
+            currentOrientation = 'portrait';
+            previewContainer.classList.remove('landscape-container');
+            previewContainer.classList.add('portrait-container');
+            orientationStatus.textContent = 'Portrait Mode';
         }
     }
 
     // Initialize MRAID and handle events
-if (typeof mraid !== 'undefined') {
-    if (mraid.getState() === 'loading') {
-        mraid.addEventListener('ready', mraidIsReady);
-    } else {
-        mraidIsReady();
+    if (typeof mraid !== 'undefined') {
+        if (mraid.getState() === 'loading') {
+            mraid.addEventListener('ready', mraidIsReady);
+        } else {
+            mraidIsReady();
+        }
     }
-}
 
-function mraidIsReady() {
-    mraid.useCustomClose(true);
-    
-    // Handle video autoplay if present
-    const video = document.querySelector('video');
-    if (video) {
-        video.play().catch(function(error) {
-            console.log("Video autoplay failed:", error);
-        });
+    function mraidIsReady() {
+        mraid.useCustomClose(true);
+        
+        // Handle video autoplay if present
+        const video = document.querySelector('video');
+        if (video) {
+            video.play().catch(function(error) {
+                console.log("Video autoplay failed:", error);
+            });
+        }
     }
-}
 
-// Check URL parameters for endcard_id (for editing)
-window.onload = function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const endcardId = urlParams.get('endcard_id');
-    if (endcardId) {
-        endcardIdField.value = endcardId;
-        currentEndcardId = endcardId;
-    }
-};
+    // Check URL parameters for endcard_id (for editing)
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const endcardId = urlParams.get('endcard_id');
+        if (endcardId) {
+            endcardIdField.value = endcardId;
+            currentEndcardId = endcardId;
+        }
+    };
 
-    // Handle combined upload form submission
+    // Form submission handler
     combinedUploadForm.addEventListener('submit', function(e) {
         e.preventDefault();
 
         // Reset UI state
         hideElement(errorContainer);
 
-        const portraitFile = portraitFileInput.files[0];
-        const landscapeFile = landscapeFileInput.files[0];
+        const mediaFile = mediaFileInput.files[0];
 
-        // Validate at least one file is selected
-        if (!portraitFile && !landscapeFile) {
-            showError('Please select at least one file for conversion');
+        // Validate file is selected
+        if (!mediaFile) {
+            showError('Please select a file for conversion');
             return;
         }
 
-        const MAX_FILE_SIZE = 2.2 * 1024 * 1024; // 2.2MB per file
+        const MAX_FILE_SIZE = 2.2 * 1024 * 1024; // 2.2MB
         const validTypes = ['image/jpeg', 'image/png', 'video/mp4'];
 
-        // Validate portrait file if provided
-        if (portraitFile) {
-            // Check file size
-            if (portraitFile.size > MAX_FILE_SIZE) {
-                showError(`Portrait file size (${(portraitFile.size / (1024 * 1024)).toFixed(2)}MB) exceeds the 2.2MB limit`);
-                return;
-            }
-
-            // Check file type
-            if (!validTypes.includes(portraitFile.type)) {
-                showError('Invalid portrait file type. Please upload a JPEG, PNG, or MP4 file');
-                return;
-            }
+        // Check file size
+        if (mediaFile.size > MAX_FILE_SIZE) {
+            showError(`File size (${(mediaFile.size / (1024 * 1024)).toFixed(2)}MB) exceeds the 2.2MB limit`);
+            return;
         }
 
-        // Validate landscape file if provided
-        if (landscapeFile) {
-            // Check file size
-            if (landscapeFile.size > MAX_FILE_SIZE) {
-                showError(`Landscape file size (${(landscapeFile.size / (1024 * 1024)).toFixed(2)}MB) exceeds the 2.2MB limit`);
-                return;
-            }
-
-            // Check file type
-            if (!validTypes.includes(landscapeFile.type)) {
-                showError('Invalid landscape file type. Please upload a JPEG, PNG, or MP4 file');
-                return;
-            }
+        // Check file type
+        if (!validTypes.includes(mediaFile.type)) {
+            showError('Invalid file type. Please upload a JPEG, PNG, or MP4 file');
+            return;
         }
 
         // Show loading indicator
         showElement(loadingIndicator);
         disableElement(combinedUploadBtn);
 
-        // Create FormData and append files
+        // Create FormData and append file
         const formData = new FormData();
-
-        if (portraitFile) {
-            formData.append('portrait_file', portraitFile);
-        }
-
-        if (landscapeFile) {
-            formData.append('landscape_file', landscapeFile);
-        }
+        formData.append('media_file', mediaFile);
 
         // Add endcard_id if editing an existing record
         if (endcardIdField.value) {
@@ -162,7 +174,7 @@ window.onload = function() {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(data => {
-                    throw new Error(data.error || 'Error converting files');
+                    throw new Error(data.error || 'Error converting file');
                 });
             }
             return response.json();
@@ -178,19 +190,18 @@ window.onload = function() {
                 currentEndcardId = data.endcard_id;
             }
 
-            // Process portrait data if available
-            if (data.portrait) {
-                portraitHTML = data.portrait;
-                portraitFilename = data.portrait_info.filename;
-                updatePreview(portraitPreview, portraitHTML);
-            }
+            // Store HTML content and filename
+            htmlContent = data.html;
+            uploadedFilename = data.file_info.filename;
 
-            // Process landscape data if available
-            if (data.landscape) {
-                landscapeHTML = data.landscape;
-                landscapeFilename = data.landscape_info.filename;
-                updatePreview(landscapePreview, landscapeHTML);
-            }
+            // Update preview
+            updatePreview(endcardPreview, htmlContent);
+
+            // Reset orientation to portrait
+            currentOrientation = 'portrait';
+            previewContainer.classList.remove('landscape-container');
+            previewContainer.classList.add('portrait-container');
+            orientationStatus.textContent = 'Portrait Mode';
 
             // Show results and scroll to them
             showElement(resultsContainer);
@@ -202,26 +213,6 @@ window.onload = function() {
             showError(error.message);
         });
     });
-
-    // Handle download buttons
-    downloadPortraitBtn.addEventListener('click', function() {
-        if (portraitHTML && portraitFilename) {
-            downloadHTML('portrait', portraitFilename, portraitHTML);
-        } else {
-            showError('No portrait endcard available. Please upload a portrait file first.');
-        }
-    });
-
-    downloadLandscapeBtn.addEventListener('click', function() {
-        if (landscapeHTML && landscapeFilename) {
-            downloadHTML('landscape', landscapeFilename, landscapeHTML);
-        } else {
-            showError('No landscape endcard available. Please upload a landscape file first.');
-        }
-    });
-    
-    // Download both button handler
-    downloadBothBtn.addEventListener('click', downloadBothVersions);
 
     // Helper Functions
     function showElement(element) {
@@ -243,6 +234,7 @@ window.onload = function() {
     function showError(message) {
         if (errorMessage) errorMessage.textContent = message;
         showElement(errorContainer);
+        errorContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function updatePreview(iframeElement, htmlContent) {
@@ -265,7 +257,13 @@ window.onload = function() {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${baseFilename}_${orientation}.html`;
+        
+        if (orientation === 'rotatable') {
+            link.download = `${baseFilename}_endcard.html`;
+        } else {
+            link.download = `${baseFilename}_${orientation}.html`;
+        }
+        
         document.body.appendChild(link);
         link.click();
         setTimeout(() => {
