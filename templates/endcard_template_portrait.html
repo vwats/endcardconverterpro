@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,48 +10,35 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-        }
-        #clickArea {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            cursor: pointer;
-        }
-        .endcard {
-            width: 100%;
-            height: 100%;
             background: url("{{ data_url }}") center center / contain no-repeat;
-            position: absolute;
-            top: 0;
-            left: 0;
         }
     </style>
 </head>
 <body>
-    <div class="endcard"></div>
-    <div id="clickArea"></div>
     <script>
-        function handleClick() {
-            if (typeof mraid !== 'undefined') {
-                mraid.expand();
-                mraid.open('market://details?id=com.zing.zepeto');
+        function mraidIsReady() {
+            if (mraid.getState() === 'loading') {
+                mraid.addEventListener('ready', initAd);
+            } else {
+                initAd();
             }
         }
 
-        document.getElementById('clickArea').addEventListener('click', handleClick);
-        document.getElementById('clickArea').addEventListener('touchend', handleClick);
+        function initAd() {
+            mraid.useCustomClose(true);
+            document.body.addEventListener('click', handleClick);
+            document.body.addEventListener('touchend', handleClick);
+        }
+
+        function handleClick() {
+            if (typeof mraid !== 'undefined') {
+                mraid.expand();
+                mraid.open('https://p.applov.in/playablePreview?create=1&qr=1');
+            }
+        }
 
         if (typeof mraid !== 'undefined') {
-            if (mraid.getState() === 'loading') {
-                mraid.addEventListener('ready', function() {
-                    mraid.useCustomClose(true);
-                });
-            } else {
-                mraid.useCustomClose(true);
-            }
+            mraidIsReady();
         }
     </script>
 </body>
