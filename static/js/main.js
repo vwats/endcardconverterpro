@@ -257,37 +257,42 @@ window.onload = function() {
             const container = document.createElement('div');
             container.innerHTML = htmlContent;
 
-            // Setup mock MRAID for preview
-            const mraidScript = `
-                <script>
-                if (typeof mraid === 'undefined') {
+            // Create a base HTML wrapper with CSP meta tag
+            const baseHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:">
+                    <script>
                     window.mraid = {
-                        getState: function() { return 'ready'; },
-                        addEventListener: function(event, callback) {
-                            if (event === 'ready') setTimeout(callback, 0);
+                        getState: () => 'ready',
+                        addEventListener: (e, cb) => {
+                            console.log('[Mock] Event:', e);
+                            if (e === 'ready') setTimeout(cb, 50);
+                            if (e === 'sizeChange') cb({width: 320, height: 480});
                         },
-                        useCustomClose: function() {},
-                        open: function(url) { console.log('Mock MRAID open:', url); }
+                        useCustomClose: (flag) => console.log('Custom close:', flag),
+                        open: (url) => console.log('Mock open:', url)
                     };
-                }
-                </script>
-            `;
+                    </script>
+                </head>
+                <body style="margin:0;padding:0;">
+                    ${htmlContent}
+                </body>
+                </html>`;
 
-            // Insert MRAID mock before closing head tag
-            const modifiedContent = htmlContent.replace('</head>', mraidScript + '</head>');
+            // Set up preview frame with all necessary permissions
+            previewFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-presentation allow-forms');
             
-            // Update the preview frame document with all necessary permissions
-            previewFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-presentation');
-            previewFrame.srcdoc = modifiedContent;
-
-            // Handle preview frame load
-            previewFrame.onload = function() {
-                try {
-                    const frameDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
-                    console.log('Preview frame loaded');
-                } catch (e) {
-                    console.error('Frame access error:', e);
-                }
+            // Create blob URL for the content
+            const blob = new Blob([baseHTML], {type: 'text/html'});
+            const blobUrl = URL.createObjectURL(blob);
+            
+            // Set src and handle cleanup
+            previewFrame.src = blobUrl;
+            previewFrame.onload = () => {
+                URL.revokeObjectURL(blobUrl);
+                console.log('Preview frame loaded successfully');
             };
         } catch (error) {
             console.error("Preview update failed:", error);
