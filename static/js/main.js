@@ -207,38 +207,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!filename || !htmlContent) return;
 
         const baseFilename = filename.split('.')[0];
-
-        fetch(`/download/${orientation}/${filename}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-                html: htmlContent
-            }).toString()
-        })
-        .then(response => {
-            if (!response.ok) {
-                // More informative error message
-                return response.text().then(text => {
-                    throw new Error(`Download failed (${response.status}): ${text}`);
-                });
-            }
-            return response.blob();
-        })
-        .then(blob => {
-            const url = window.URL.createObjectURL(new Blob([blob], {type: 'text/html;charset=utf-8'}));
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${baseFilename}_${orientation}.html`;
-            document.body.appendChild(link);
-            link.click();
+        const blob = new Blob([htmlContent], {type: 'text/html;charset=utf-8'});
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${baseFilename}_${orientation}.html`;
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => {
             window.URL.revokeObjectURL(url);
             document.body.removeChild(link);
-        })
-        .catch(error => {
-            console.error('Download failed:', error);
-            showError(`Failed to download the file: ${error.message}`); // More detailed error message
-        });
+        }, 100);
     }
 });
