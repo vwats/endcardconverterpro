@@ -253,51 +253,96 @@ window.onload = function() {
         if (!previewFrame || !htmlContent) return;
 
         try {
-            // Create a temporary container
             const container = document.createElement('div');
             container.innerHTML = htmlContent;
 
-            // Create a base HTML wrapper with CSP meta tag
+            // Create a base HTML wrapper with minimal CSP
             const baseHTML = `
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:">
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <script>
-                    // MRAID Environment Validation
-                    console.log('Window Identity:', window === window.top); // Should be false
-                    console.log('MRAID Exists:', typeof mraid !== 'undefined'); // Must be true
-                    console.log('DOM Ready:', document.readyState); // Should be complete
+                    // Direct window mutation for MRAID mock
                     window.mraid = {
-                        getState: () => 'ready',
-                        addEventListener: (e, cb) => {
-                            console.log('[Mock] Event:', e);
-                            if (e === 'ready') setTimeout(cb, 50);
-                            if (e === 'sizeChange') cb({width: 320, height: 480});
+                        state: 'ready',
+                        getState: function() { return this.state; },
+                        addEventListener: function(event, callback) {
+                            console.log('[MRAID] Event:', event);
+                            if (event === 'ready') {
+                                setTimeout(callback, 0);
+                            }
+                            if (event === 'stateChange') {
+                                callback(this.state);
+                            }
+                            if (event === 'sizeChange') {
+                                callback({width: window.innerWidth, height: window.innerHeight});
+                            }
                         },
-                        useCustomClose: (flag) => console.log('Custom close:', flag),
-                        open: (url) => console.log('Mock open:', url)
+                        removeEventListener: function() {},
+                        useCustomClose: function() {},
+                        open: function(url) { console.log('[MRAID] Open:', url); },
+                        close: function() { console.log('[MRAID] Close called'); },
+                        expand: function() { console.log('[MRAID] Expand called'); },
+                        getExpandProperties: function() {
+                            return {width: window.innerWidth, height: window.innerHeight};
+                        }
                     };
+                    
+                    // Dispatch mraidready event
+                    window.addEventListener('DOMContentLoaded', function() {
+                        console.log('[MRAID] DOM Ready, dispatching mraidready');
+                        window.dispatchEvent(new Event('mraidready'));
+                    });
                     </script>
                 </head>
-                <body style="margin:0;padding:0;">
+                <body style="margin:0;padding:0;background:#000;">
                     ${htmlContent}
+                    <script>
+                    // Verify MRAID setup
+                    console.log('[DEBUG] MRAID exists:', typeof mraid !== 'undefined');
+                    console.log('[DEBUG] MRAID state:', mraid.getState());
+                    console.log('[DEBUG] DOM state:', document.readyState);
+                    </script>
                 </body>
                 </html>`;
 
             // Set up preview frame with all necessary permissions
-            previewFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-presentation allow-forms');
+            previewFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-presentation allow-forms allow-modals');
             
-            // Create blob URL for the content
-            const blob = new Blob([baseHTML], {type: 'text/html'});
-            const blobUrl = URL.createObjectURL(blob);
-            
-            // Set src and handle cleanup
-            previewFrame.src = blobUrl;
-            previewFrame.onload = () => {
-                URL.revokeObjectURL(blobUrl);
-                console.log('Preview frame loaded successfully');
-            };
+            // Create blob URL with error handling
+            try {
+                const blob = new Blob([baseHTML], {type: 'text/html;charset=utf-8'});
+                const blobUrl = URL.createObjectURL(blob);
+                
+                previewFrame.onload = () => {
+                    try {
+                        console.log('[Preview] Frame loaded');
+                        // Direct MRAID injection fallback
+                        const frameWindow = previewFrame.contentWindow;
+                        if (frameWindow && typeof frameWindow.mraid === 'undefined') {
+                            console.log('[Preview] Fallback MRAID injection');
+                            Object.defineProperty(frameWindow, 'mraid', {
+                                value: window.mraid,
+                                writable: false,
+                                configurable: false
+                            });
+                        }
+                        URL.revokeObjectURL(blobUrl);
+                    } catch (loadError) {
+                        console.error('[Preview] Frame load error:', loadError);
+                    }
+                };
+                
+                previewFrame.onerror = (error) => {
+                    console.error('[Preview] Frame error:', error);
+                };
+                
+                previewFrame.src = blobUrl;
+            } catch (blobError) {
+                console.error('[Preview] Blob creation error:', blobError);
+            }
         } catch (error) {
             console.error("Preview update failed:", error);
         }
