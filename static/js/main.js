@@ -105,23 +105,28 @@ document.addEventListener('DOMContentLoaded', function() {
         const file = fileInput.files[0];
 
         if (file) {
+            URL.revokeObjectURL(mediaPreview.src); // Clean up old URL
+            URL.revokeObjectURL(videoPreview.src);
+            
             const fileURL = URL.createObjectURL(file);
             const isVideo = file.type.startsWith('video/');
 
             if (isVideo) {
                 videoPreview.src = fileURL;
-                showElement(videoPreview);
-                hideElement(mediaPreview);
+                videoPreview.style.display = 'block';
+                mediaPreview.style.display = 'none';
             } else {
                 mediaPreview.src = fileURL;
-                showElement(mediaPreview);
-                hideElement(videoPreview);
+                mediaPreview.style.display = 'block';
+                videoPreview.style.display = 'none';
             }
         }
 
-        // Update HTML content
+        // Update HTML content with proper orientation
         const htmlContent = currentOrientation === 'portrait' ? portraitHtml : landscapeHtml;
-        updatePreview(endcardPreview, htmlContent);
+        if (endcardPreview) {
+            updatePreview(endcardPreview, htmlContent);
+        }
     }
 
     // Form submission handler
