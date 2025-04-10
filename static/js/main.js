@@ -255,9 +255,12 @@ window.onload = function() {
         try {
             const blob = new Blob([htmlContent], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
-            previewFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+
+            // Set sandbox attributes for MRAID preview
+            previewFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups');
             previewFrame.src = url;
 
+            // Cleanup URL after loading
             previewFrame.onload = () => {
                 URL.revokeObjectURL(url);
             };
