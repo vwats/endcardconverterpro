@@ -264,6 +264,10 @@ window.onload = function() {
                 <head>
                     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:">
                     <script>
+                    // MRAID Environment Validation
+                    console.log('Window Identity:', window === window.top); // Should be false
+                    console.log('MRAID Exists:', typeof mraid !== 'undefined'); // Must be true
+                    console.log('DOM Ready:', document.readyState); // Should be complete
                     window.mraid = {
                         getState: () => 'ready',
                         addEventListener: (e, cb) => {
