@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EndCard Converter Pro - Conversion History</title>
+    <!-- Bootstrap CSS (Replit-themed) -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container py-4">
+        <header class="pb-3 mb-4 border-bottom">
+            <div class="d-flex align-items-center text-white">
+                <i class="fas fa-crop-alt fs-4 me-3"></i>
+                <h1 class="fs-4">EndCard Converter Pro</h1>
+            </div>
+        </header>
+
+        <div class="d-flex justify-content-between mb-4">
+            <h2 class="fs-3">Conversion History</h2>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Converter
+            </a>
+        </div>
+
+        {% if endcards %}
+        <div class="table-responsive">
+            <table class="table table-hover table-dark">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Filename</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Size</th>
+                        <th scope="col">Portrait</th>
+                        <th scope="col">Landscape</th>
+                        <th scope="col">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for endcard in endcards %}
+                    <tr>
+                        <td>{{ endcard.id }}</td>
+                        <td>{{ endcard.original_filename }}</td>
+                        <td>
+                            {% if endcard.file_type == 'image' %}
+                            <span class="badge bg-info text-dark">
+                                <i class="fas fa-image me-1"></i>Image
+                            </span>
+                            {% else %}
+                            <span class="badge bg-primary">
+                                <i class="fas fa-video me-1"></i>Video
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ (endcard.file_size / 1024)|round(1) }} KB</td>
+                        <td>
+                            {% if endcard.portrait_created %}
+                            <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                            <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if endcard.landscape_created %}
+                            <i class="fas fa-check-circle text-success"></i>
+                            {% else %}
+                            <i class="fas fa-times-circle text-danger"></i>
+                            {% endif %}
+                        </td>
+                        <td>{{ endcard.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="text-muted mt-3">
+            <i class="fas fa-info-circle me-2"></i>
+            Total conversions: {{ endcards|length }}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No conversions found. <a href="{{ url_for('index') }}" class="alert-link">Create your first endcard</a>.
+        </div>
+        {% endif %}
+
+        <footer class="pt-3 mt-4 text-body-secondary border-top">
+            &copy; 2023 EndCard Converter Pro
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

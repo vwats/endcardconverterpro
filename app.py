@@ -5,6 +5,7 @@ from flask import Flask, request, render_template, send_file, jsonify, flash, re
 from werkzeug.utils import secure_filename
 import io
 from utils.endcard_converter import convert_to_endcard
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -12,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev_secret_key")
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
 
 # Configure file upload settings
 UPLOAD_FOLDER = '/tmp/uploads'
@@ -21,8 +23,32 @@ MAX_CONTENT_LENGTH = 2.2 * 1024 * 1024  # 2.2MB
 # Create upload folder if it doesn't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# Database configuration
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    # Fix for PostgreSQL URL format
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    # Fallback for development
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///endcards.db'
+
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_recycle': 300,
+    'pool_pre_ping': True,
+}
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+
+# Import and initialize the database
+from models import db, Endcard
+db.init_app(app)
+
+# Create all database tables
+with app.app_context():
+    db.create_all()
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -30,6 +56,12 @@ def allowed_file(filename):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/history')
+def history():
+    """Display history of all endcard conversions"""
+    endcards = Endcard.query.order_by(Endcard.created_at.desc()).all()
+    return render_template('history.html', endcards=endcards)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -58,8 +90,26 @@ def upload_file():
         
         logger.debug(f"File saved at {file_path}")
         
+        # Get file size
+        file_size = os.path.getsize(file_path)
+        
+        # Determine file type (image or video)
+        file_extension = os.path.splitext(filename)[1].lower()
+        file_type = 'video' if file_extension == '.mp4' else 'image'
+        
         # Generate endcards
         portrait_html, landscape_html = convert_to_endcard(file_path, filename)
+        
+        # Save record to database
+        new_endcard = Endcard(
+            original_filename=filename,
+            file_type=file_type,
+            file_size=file_size,
+            portrait_created=bool(portrait_html),
+            landscape_created=bool(landscape_html)
+        )
+        db.session.add(new_endcard)
+        db.session.commit()
         
         # Clean up the temporary file
         try:
@@ -71,7 +121,8 @@ def upload_file():
         return jsonify({
             'portrait': portrait_html,
             'landscape': landscape_html,
-            'filename': filename
+            'filename': filename,
+            'endcard_id': new_endcard.id
         })
     
     except Exception as e:

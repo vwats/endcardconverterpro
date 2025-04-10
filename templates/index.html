@@ -14,9 +14,14 @@
 <body>
     <div class="container py-4">
         <header class="pb-3 mb-4 border-bottom">
-            <div class="d-flex align-items-center text-white">
-                <i class="fas fa-crop-alt fs-4 me-3"></i>
-                <h1 class="fs-4">EndCard Converter Pro</h1>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center text-white">
+                    <i class="fas fa-crop-alt fs-4 me-3"></i>
+                    <h1 class="fs-4">EndCard Converter Pro</h1>
+                </div>
+                <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-history me-2"></i>View History
+                </a>
             </div>
         </header>
 
