@@ -30,12 +30,13 @@
     </style>
     <script>
         function updateOrientation() {
+            const content = document.getElementById('content');
             if (window.innerHeight > window.innerWidth) {
                 // Portrait mode
-                window.location.href = '/templates/endcard_template_portrait.html';
+                content.style.transform = 'rotate(0deg)';
             } else {
                 // Landscape mode
-                window.location.href = '/templates/endcard_template_landscape.html';
+                content.style.transform = 'rotate(-90deg)';
             }
         }
 
