@@ -152,9 +152,12 @@ def upload_combined():
                     
                     logger.debug(f"File saved at {file_path}")
                     
-                    # Determine file type (image or video)
+                    # Determine file type and mime type
                     extension = os.path.splitext(filename)[1].lower()
                     file_type = 'video' if extension == '.mp4' else 'image'
+                    mime_type = "video/mp4" if extension == '.mp4' else "image/jpeg"
+                    if extension == '.png':
+                        mime_type = "image/png"
                     
                     # Process both portrait and landscape files
                     portrait_file = request.files['portrait_file']
@@ -177,13 +180,10 @@ def upload_combined():
                         landscape_data = base64.b64encode(f.read()).decode('utf-8')
                         
                     # Generate endcard with both orientations
-                    endcard_data = generate_rotatable_html(
-                        portrait_data,
-                        landscape_data,
-                        mime_type,
-                        mime_type,
-                        file_type == 'video',
-                        base_filename
+                    endcard_data = convert_to_endcard(
+                        file_path,
+                        filename,
+                        orientation='rotatable'
                     )
                     
                     # Clean up temporary files
