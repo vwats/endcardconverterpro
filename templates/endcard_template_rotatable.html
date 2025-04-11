@@ -29,22 +29,33 @@
         }
     </style>
     <script>
+        const portraitData = '{{ portrait_data }}';
+        const landscapeData = '{{ landscape_data }}';
+        let isLandscape = false;
+
         function updateOrientation() {
             const media = document.getElementById('media');
-            if (window.innerHeight > window.innerWidth) {
-                // Portrait mode
-                media.src = '{{ portrait_data }}';
-            } else {
-                // Landscape mode
-                media.src = '{{ landscape_data }}';
-            }
+            media.src = isLandscape ? landscapeData : portraitData;
+            media.style.transform = isLandscape ? 'rotate(90deg)' : 'none';
+            media.style.width = isLandscape ? '100vh' : '100%';
+            media.style.height = isLandscape ? '100vw' : '100%';
+            document.getElementById('content').style.overflow = isLandscape ? 'visible' : 'hidden';
         }
 
-        // Call on page load
-        window.onload = updateOrientation;
+        function toggleOrientation() {
+            isLandscape = !isLandscape;
+            updateOrientation();
+        }
 
-        // Listen for orientation/resize changes
-        window.addEventListener('resize', updateOrientation);
+        // Initialize on page load
+        window.onload = function() {
+            updateOrientation();
+            // Add rotate button click handler
+            const rotateButton = document.querySelector('[onclick*="rotate"]');
+            if (rotateButton) {
+                rotateButton.onclick = toggleOrientation;
+            }
+        };
     </script>
 </head>
 <body>
