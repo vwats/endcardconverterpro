@@ -29,10 +29,6 @@
         }
     </style>
     <script>
-        const portraitData = '{{ portrait_data }}';
-        const landscapeData = '{{ landscape_data }}';
-        let isLandscape = false;
-
         function updateOrientation() {
             if (window.innerHeight > window.innerWidth) {
                 // Portrait mode
@@ -41,11 +37,9 @@
                 // Landscape mode
                 window.location.href = 'endcard_template_landscape.html';
             }
-            document.getElementById('content').style.overflow = isLandscape ? 'visible' : 'hidden';
         }
 
         function toggleOrientation() {
-            isLandscape = !isLandscape;
             updateOrientation();
         }
 
@@ -74,19 +68,12 @@
                 }
             }
 
-            function handleOrientation() {
-                var isPortrait = window.innerHeight > window.innerWidth;
-                media.style.objectFit = isPortrait ? 'contain' : 'contain';
-            }
-
             function initAd() {
                 if (typeof mraid !== 'undefined') {
                     mraid.useCustomClose(true);
                 }
                 content.addEventListener('click', handleClick);
                 content.addEventListener('touchend', handleClick);
-                window.addEventListener('resize', handleOrientation);
-                handleOrientation();
             }
 
             if (typeof mraid !== 'undefined') {
