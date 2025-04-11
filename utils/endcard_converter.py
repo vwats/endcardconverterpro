@@ -83,28 +83,32 @@ def convert_to_endcard(file_path, filename, orientation='rotatable'):
     elif orientation == 'landscape':
         return landscape_html
 
-def generate_rotatable_html(base64_data, mime_type, is_video, base_filename):
+def generate_rotatable_html(portrait_data, landscape_data, portrait_mime, landscape_mime, is_video, base_filename):
     """
-    Generate a rotatable HTML endcard with the embedded base64 media file.
+    Generate a rotatable HTML endcard with both portrait and landscape embedded media.
     
     Args:
-        base64_data (str): Base64 encoded media data
-        mime_type (str): MIME type of the media (image/jpeg, image/png, video/mp4)
-        is_video (bool): Whether the media is a video
+        portrait_data (str): Base64 encoded portrait media data
+        landscape_data (str): Base64 encoded landscape media data
+        portrait_mime (str): MIME type of the portrait media
+        landscape_mime (str): MIME type of the landscape media
+        is_video (bool): Whether the media is video
         base_filename (str): Original filename without extension
         
     Returns:
         str: HTML content with embedded media and rotation capability
     """
-    # Create data URL for the media
-    data_url = f"data:{mime_type};base64,{base64_data}"
+    # Create data URLs for both orientations
+    portrait_url = f"data:{portrait_mime};base64,{portrait_data}"
+    landscape_url = f"data:{landscape_mime};base64,{landscape_data}"
     
-    # Use the new rotatable template
+    # Use the rotatable template with both URLs
     html = render_template(
         'endcard_template_rotatable.html',
         base_filename=base_filename,
         is_video=is_video,
-        data_url=data_url
+        portrait_data_url=portrait_url,
+        landscape_data_url=landscape_url
     )
     
     return html

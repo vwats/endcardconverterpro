@@ -36,11 +36,11 @@
 <body>
     <div id="content">
         {% if is_video %}
-            <video id="portrait-content" class="media-content active" src="{{ data_url }}" playsinline autoplay loop muted></video>
-            <video id="landscape-content" class="media-content" src="{{ data_url }}" playsinline autoplay loop muted></video>
+            <video id="portrait-content" class="media-content active" src="{{ portrait_data_url }}" playsinline autoplay loop muted></video>
+            <video id="landscape-content" class="media-content" src="{{ landscape_data_url }}" playsinline autoplay loop muted></video>
         {% else %}
-            <img id="portrait-content" class="media-content active" src="{{ data_url }}" alt="Portrait Content">
-            <img id="landscape-content" class="media-content" src="{{ data_url }}" alt="Landscape Content">
+            <img id="portrait-content" class="media-content active" src="{{ portrait_data_url }}" alt="Portrait Content">
+            <img id="landscape-content" class="media-content" src="{{ landscape_data_url }}" alt="Landscape Content">
         {% endif %}
     </div>
     <script>

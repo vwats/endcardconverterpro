@@ -155,8 +155,42 @@ def upload_combined():
                     extension = os.path.splitext(filename)[1].lower()
                     file_type = 'video' if extension == '.mp4' else 'image'
                     
-                    # Generate endcard with all orientations
-                    endcard_data = convert_to_endcard(file_path, filename, orientation='rotatable')
+                    # Process both portrait and landscape files
+                    portrait_file = request.files['portrait_file']
+                    landscape_file = request.files['landscape_file']
+                    
+                    if not portrait_file or not landscape_file:
+                        return jsonify({'error': 'Both portrait and landscape files are required'}), 400
+                        
+                    # Save both files temporarily
+                    portrait_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{upload_id}_portrait_{filename}")
+                    landscape_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{upload_id}_landscape_{filename}")
+                    
+                    portrait_file.save(portrait_path)
+                    landscape_file.save(landscape_path)
+                    
+                    # Read and encode both files
+                    with open(portrait_path, 'rb') as f:
+                        portrait_data = base64.b64encode(f.read()).decode('utf-8')
+                    with open(landscape_path, 'rb') as f:
+                        landscape_data = base64.b64encode(f.read()).decode('utf-8')
+                        
+                    # Generate endcard with both orientations
+                    endcard_data = generate_rotatable_html(
+                        portrait_data,
+                        landscape_data,
+                        mime_type,
+                        mime_type,
+                        file_type == 'video',
+                        base_filename
+                    )
+                    
+                    # Clean up temporary files
+                    try:
+                        os.remove(portrait_path)
+                        os.remove(landscape_path)
+                    except Exception as e:
+                        logger.error(f"Error removing temporary files: {e}")
                     
                     # Update endcard record
                     endcard.portrait_filename = filename
