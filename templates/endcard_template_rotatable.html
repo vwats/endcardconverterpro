@@ -34,14 +34,13 @@
         let isLandscape = false;
 
         function updateOrientation() {
-            const media = document.getElementById('media');
-            const dataUrl = isLandscape ? landscapeData : portraitData;
-            if (media.src !== dataUrl) {
-                media.src = dataUrl;
+            if (window.innerHeight > window.innerWidth) {
+                // Portrait mode
+                window.location.href = 'endcard_template_portrait.html';
+            } else {
+                // Landscape mode
+                window.location.href = 'endcard_template_landscape.html';
             }
-            media.style.transform = isLandscape ? 'rotate(90deg)' : 'none';
-            media.style.width = isLandscape ? '100vh' : '100%';
-            media.style.height = isLandscape ? '100vw' : '100%';
             document.getElementById('content').style.overflow = isLandscape ? 'visible' : 'hidden';
         }
 
@@ -50,15 +49,9 @@
             updateOrientation();
         }
 
-        // Initialize on page load
-        window.onload = function() {
-            updateOrientation();
-            // Add rotate button click handler
-            const rotateButton = document.querySelector('[onclick*="rotate"]');
-            if (rotateButton) {
-                rotateButton.onclick = toggleOrientation;
-            }
-        };
+        // Initialize on page load and listen for orientation changes
+        window.onload = updateOrientation;
+        window.addEventListener('resize', updateOrientation);
     </script>
 </head>
 <body>
