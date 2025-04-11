@@ -1,6 +1,7 @@
 import os
 import logging
 import uuid
+import base64
 from flask import Flask, request, render_template, send_file, jsonify, flash, redirect, url_for
 from werkzeug.utils import secure_filename
 from functools import wraps
