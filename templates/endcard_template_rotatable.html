@@ -30,9 +30,13 @@
             top: 0;
             left: 0;
             display: none;
+            transform: translate(0, 0);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         .media-content.active {
             display: block !important;
+            opacity: 1;
         }
     </style>
 </head>
