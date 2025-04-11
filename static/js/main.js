@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
     // DOM elements
     const combinedUploadForm = document.getElementById('combined-upload-form');
@@ -71,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updatePreview(file, orientation) {
         if (!file || currentOrientation !== orientation) return;
-        
+
         const isVideo = file.type.startsWith('video/');
         const fileURL = URL.createObjectURL(file);
 
@@ -95,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (combinedUploadForm) {
         combinedUploadForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             if (!portraitFile || !landscapeFile) {
                 showError('Please select both portrait and landscape files.');
                 return;
@@ -163,9 +162,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!endcardPreview || !currentData) return;
 
         const doc = endcardPreview.contentDocument || endcardPreview.contentWindow.document;
+        const htmlContent = currentOrientation === 'portrait' ? currentData.portrait : currentData.landscape;
+
+        // Save current scroll position
+        const scrollPos = doc.documentElement ? doc.documentElement.scrollTop : 0;
+
         doc.open();
-        doc.write(currentOrientation === 'portrait' ? currentData.portrait : currentData.landscape);
+        doc.write(htmlContent);
         doc.close();
+
+        // Restore scroll position
+        if (doc.documentElement) {
+            doc.documentElement.scrollTop = scrollPos;
+        }
+
+        // Update orientation status text
+        if (orientationStatus) {
+            orientationStatus.textContent = `${currentOrientation.charAt(0).toUpperCase() + currentOrientation.slice(1)} Mode`;
+        }
     }
 
     // Download handling
