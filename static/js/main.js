@@ -56,20 +56,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (this === portraitFileInput) {
                 portraitFile = file;
-                updatePreview(file, 'portrait');
             } else {
                 landscapeFile = file;
-                updatePreview(file, 'landscape');
             }
 
             if (portraitFile && landscapeFile) {
                 enableElement(combinedUploadBtn);
             }
+            updatePreview();
         });
     });
 
-    function updatePreview(file, orientation) {
-        if (!file || currentOrientation !== orientation) return;
+    function updatePreview() {
+        const file = currentOrientation === 'portrait' ? portraitFile : landscapeFile;
+        if (!file) return;
 
         const isVideo = file.type.startsWith('video/');
         const fileURL = URL.createObjectURL(file);
@@ -154,6 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
             currentOrientation = currentOrientation === 'portrait' ? 'landscape' : 'portrait';
             previewContainer.className = `preview-container ${currentOrientation}-container`;
             orientationStatus.textContent = `${currentOrientation.charAt(0).toUpperCase() + currentOrientation.slice(1)} Mode`;
+            updatePreview();
             updateEndcardPreview();
         });
     }
