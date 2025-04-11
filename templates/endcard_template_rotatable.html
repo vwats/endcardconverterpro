@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,33 +22,42 @@
             cursor: pointer;
             background-color: #000;
         }
-        #media-content {
+        .media-content {
             width: 100%;
             height: 100%;
             object-fit: contain;
+            display: none;
+        }
+        .media-content.active {
+            display: block;
         }
     </style>
 </head>
 <body>
     <div id="content">
         {% if is_video %}
-            <video id="media-content" src="{{ data_url }}" playsinline autoplay loop muted></video>
+            <video id="portrait-content" class="media-content active" src="{{ portrait_data_url }}" playsinline autoplay loop muted></video>
+            <video id="landscape-content" class="media-content" src="{{ landscape_data_url }}" playsinline autoplay loop muted></video>
         {% else %}
-            <img id="media-content" src="{{ data_url }}" alt="Endcard Content">
+            <img id="portrait-content" class="media-content active" src="{{ portrait_data_url }}" alt="Portrait Content">
+            <img id="landscape-content" class="media-content" src="{{ landscape_data_url }}" alt="Landscape Content">
         {% endif %}
     </div>
     <script>
         (function() {
             var content = document.getElementById('content');
-            var media = document.getElementById('media-content');
+            var portraitContent = document.getElementById('portrait-content');
+            var landscapeContent = document.getElementById('landscape-content');
 
             function updateOrientation() {
                 if (window.innerHeight > window.innerWidth) {
                     // Portrait mode
-                    media.style.transform = 'rotate(0deg)';
+                    portraitContent.classList.add('active');
+                    landscapeContent.classList.remove('active');
                 } else {
                     // Landscape mode
-                    media.style.transform = 'rotate(-90deg)';
+                    portraitContent.classList.remove('active');
+                    landscapeContent.classList.add('active');
                 }
             }
 
