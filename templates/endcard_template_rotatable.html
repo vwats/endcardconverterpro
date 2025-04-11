@@ -35,7 +35,10 @@
 
         function updateOrientation() {
             const media = document.getElementById('media');
-            media.src = isLandscape ? landscapeData : portraitData;
+            const dataUrl = isLandscape ? landscapeData : portraitData;
+            if (media.src !== dataUrl) {
+                media.src = dataUrl;
+            }
             media.style.transform = isLandscape ? 'rotate(90deg)' : 'none';
             media.style.width = isLandscape ? '100vh' : '100%';
             media.style.height = isLandscape ? '100vw' : '100%';
