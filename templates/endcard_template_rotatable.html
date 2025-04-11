@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,15 +21,7 @@
             cursor: pointer;
             background-color: #000;
         }
-        #portrait-content, #landscape-content {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            display: none;
-        }
-        #portrait-media, #landscape-media {
+        #media-content {
             width: 100%;
             height: 100%;
             object-fit: contain;
@@ -39,43 +30,26 @@
 </head>
 <body>
     <div id="content">
-        <div id="portrait-content">
-            {% if portrait_is_video %}
-                <video id="portrait-media" src="{{ portrait_data_url }}" playsinline autoplay loop muted></video>
-            {% else %}
-                <img id="portrait-media" src="{{ portrait_data_url }}" alt="Portrait Endcard">
-            {% endif %}
-        </div>
-        <div id="landscape-content">
-            {% if landscape_is_video %}
-                <video id="landscape-media" src="{{ landscape_data_url }}" playsinline autoplay loop muted></video>
-            {% else %}
-                <img id="landscape-media" src="{{ landscape_data_url }}" alt="Landscape Endcard">
-            {% endif %}
-        </div>
+        {% if is_video %}
+            <video id="media-content" src="{{ data_url }}" playsinline autoplay loop muted></video>
+        {% else %}
+            <img id="media-content" src="{{ data_url }}" alt="Endcard Content">
+        {% endif %}
     </div>
     <script>
-        function updateOrientation() {
-            const portraitContent = document.getElementById('portrait-content');
-            const landscapeContent = document.getElementById('landscape-content');
-            
-            if (window.innerHeight > window.innerWidth) {
-                // Portrait mode
-                portraitContent.style.display = 'block';
-                landscapeContent.style.display = 'none';
-            } else {
-                // Landscape mode
-                portraitContent.style.display = 'none';
-                landscapeContent.style.display = 'block';
-            }
-        }
-
-        // Initialize on page load and listen for orientation changes
-        window.onload = updateOrientation;
-        window.addEventListener('resize', updateOrientation);
-
         (function() {
             var content = document.getElementById('content');
+            var media = document.getElementById('media-content');
+
+            function updateOrientation() {
+                if (window.innerHeight > window.innerWidth) {
+                    // Portrait mode
+                    media.style.transform = 'rotate(0deg)';
+                } else {
+                    // Landscape mode
+                    media.style.transform = 'rotate(-90deg)';
+                }
+            }
 
             function handleClick(e) {
                 e.preventDefault();
@@ -91,6 +65,11 @@
                 content.addEventListener('click', handleClick);
                 content.addEventListener('touchend', handleClick);
             }
+
+            // Initialize orientation handling
+            window.addEventListener('resize', updateOrientation);
+            window.addEventListener('orientationchange', updateOrientation);
+            updateOrientation();
 
             if (typeof mraid !== 'undefined') {
                 if (mraid.getState() === 'loading') {
