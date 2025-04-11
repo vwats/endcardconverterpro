@@ -183,7 +183,9 @@ def upload_combined():
                     endcard_data = convert_to_endcard(
                         file_path,
                         filename,
-                        orientation='rotatable'
+                        orientation='rotatable',
+                        portrait_path=portrait_path,
+                        landscape_path=landscape_path
                     )
                     
                     # Clean up temporary files
