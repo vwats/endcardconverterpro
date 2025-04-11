@@ -56,7 +56,7 @@ def convert_to_endcard(file_path, filename, orientation='rotatable'):
             'portrait': portrait_html,
             'landscape': landscape_html,
             'rotatable': generate_rotatable_html(
-                base64_data, mime_type, is_video, base_filename
+                base64_data, base64_data, mime_type, mime_type, is_video, base_filename
             )
         }
     
