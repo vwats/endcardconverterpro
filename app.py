@@ -155,16 +155,15 @@ def upload_combined():
                     extension = os.path.splitext(filename)[1].lower()
                     file_type = 'video' if extension == '.mp4' else 'image'
                     
-                    # Generate rotatable endcard
-                    rotatable_html = convert_to_endcard(file_path, filename, orientation='rotatable')
+                    # Generate endcard with all orientations
+                    endcard_data = convert_to_endcard(file_path, filename, orientation='rotatable')
                     
-                    # Update endcard record - store in portrait fields for backward compatibility
+                    # Update endcard record
                     endcard.portrait_filename = filename
                     endcard.portrait_file_type = file_type
                     endcard.portrait_file_size = file_size
                     endcard.portrait_created = True
                     
-                    # Also update landscape fields for compatibility with history view
                     endcard.landscape_filename = filename
                     endcard.landscape_file_type = file_type
                     endcard.landscape_file_size = file_size
@@ -176,6 +175,9 @@ def upload_combined():
                         'type': file_type,
                         'size': file_size
                     }
+                    
+                    # Set response data
+                    rotatable_html = endcard_data['rotatable']
                     
                     # Clean up temporary file
                     try:

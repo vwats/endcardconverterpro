@@ -7,21 +7,18 @@ logger = logging.getLogger(__name__)
 
 def convert_to_endcard(file_path, filename, orientation='rotatable'):
     """
-    Convert an uploaded image or video file into a rotatable HTML endcard.
+    Convert an uploaded image or video file into HTML endcard(s).
     
-    This implementation embeds the media file as base64 in the HTML, based on the provided converter code.
+    This implementation embeds the media file as base64 in the HTML.
     
     Args:
         file_path (str): Path to the uploaded file
         filename (str): Original filename of the uploaded file
-        orientation (str): 'rotatable', 'portrait', 'landscape', or 'both' (for backwards compatibility)
+        orientation (str): 'rotatable', 'portrait', 'landscape', or 'both'
         
     Returns:
-        str or tuple: HTML content for the requested orientation(s)
-                     If orientation='rotatable', returns a single rotatable HTML endcard
-                     If orientation='both', returns (portrait_html, landscape_html) for backwards compatibility
-                     If orientation='portrait', returns portrait_html for backwards compatibility
-                     If orientation='landscape', returns landscape_html for backwards compatibility
+        dict or str: For rotatable orientation, returns dict with both portrait and landscape HTML
+                    For other orientations, returns HTML string or tuple as before
     """
     logger.debug(f"Converting {file_path} to endcard, orientation: {orientation}")
     
@@ -47,11 +44,21 @@ def convert_to_endcard(file_path, filename, orientation='rotatable'):
     if file_extension == '.png':
         mime_type = "image/png"
     
-    # Generate rotatable HTML (new default behavior)
+    # Generate both portrait and landscape HTML for rotatable endcards
     if orientation == 'rotatable':
-        return generate_rotatable_html(
-            base64_data, mime_type, is_video, base_filename
+        portrait_html = generate_html_with_orientation_detection(
+            base64_data, mime_type, is_video, base_filename, 'portrait'
         )
+        landscape_html = generate_html_with_orientation_detection(
+            base64_data, mime_type, is_video, base_filename, 'landscape'
+        )
+        return {
+            'portrait': portrait_html,
+            'landscape': landscape_html,
+            'rotatable': generate_rotatable_html(
+                base64_data, mime_type, is_video, base_filename
+            )
+        }
     
     # Support for backwards compatibility with legacy code
     if orientation == 'portrait' or orientation == 'both':
