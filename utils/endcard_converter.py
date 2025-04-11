@@ -44,20 +44,30 @@ def convert_to_endcard(file_path, filename, orientation='rotatable'):
     if file_extension == '.png':
         mime_type = "image/png"
     
+    # Read and encode both files
+    try:
+        with open(portrait_path, 'rb') as f:
+            portrait_data = base64.b64encode(f.read()).decode('utf-8')
+        with open(landscape_path, 'rb') as f:
+            landscape_data = base64.b64encode(f.read()).decode('utf-8')
+    except Exception as e:
+        logger.error(f"Error encoding files as base64: {e}")
+        raise
+
     # Generate both portrait and landscape HTML for rotatable endcards
     if orientation == 'rotatable':
         portrait_html = generate_html_with_orientation_detection(
-            base64_data, mime_type, is_video, base_filename, 'portrait'
+            portrait_data, mime_type, is_video, base_filename, 'portrait'
         )
         landscape_html = generate_html_with_orientation_detection(
-            base64_data, mime_type, is_video, base_filename, 'landscape'
+            landscape_data, mime_type, is_video, base_filename, 'landscape'
         )
         return {
             'portrait': portrait_html,
             'landscape': landscape_html,
             'rotatable': generate_rotatable_html(
-                portrait_data=base64_data,
-                landscape_data=base64_data,
+                portrait_data=portrait_data,
+                landscape_data=landscape_data,
                 portrait_mime=mime_type,
                 landscape_mime=mime_type,
                 is_video=is_video,
