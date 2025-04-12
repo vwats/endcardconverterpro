@@ -161,17 +161,17 @@ def upload_combined():
         landscape_file.save(landscape_path)
         
         temp_files.extend([portrait_path, landscape_path])
-                    
-                    # Determine file type and mime type
-                    extension = os.path.splitext(filename)[1].lower()
-                    file_type = 'video' if extension == '.mp4' else 'image'
-                    mime_type = "video/mp4" if extension == '.mp4' else "image/jpeg"
-                    if extension == '.png':
-                        mime_type = "image/png"
-                    
-                    # Process both portrait and landscape files
-                    portrait_file = request.files['portrait_file']
-                    landscape_file = request.files['landscape_file']
+        
+        # Determine file type and mime type
+        extension = os.path.splitext(filename)[1].lower()
+        file_type = 'video' if extension == '.mp4' else 'image'
+        mime_type = "video/mp4" if extension == '.mp4' else "image/jpeg"
+        if extension == '.png':
+            mime_type = "image/png"
+        
+        # Process both portrait and landscape files
+        portrait_file = request.files['portrait_file']
+        landscape_file = request.files['landscape_file']
                     
                     if not portrait_file or not landscape_file:
                         return jsonify({'error': 'Both portrait and landscape files are required'}), 400
