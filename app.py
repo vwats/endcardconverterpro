@@ -285,6 +285,21 @@ def create_app():
             return jsonify({'error': f"Download failed: {str(e)}"}), 500
 
     # Error handler for file too large
+    @app.route('/debug/headers')
+    def debug_headers():
+        """Check if security headers are blocking downloads"""
+        response = jsonify({
+            'user_agent': request.headers.get('User-Agent'),
+            'content_security_policy': request.headers.get('Content-Security-Policy'),
+            'content_disposition': request.headers.get('Content-Disposition'),
+            'download_headers': {
+                'x-content-type-options': request.headers.get('X-Content-Type-Options'),
+                'x-frame-options': request.headers.get('X-Frame-Options')
+            }
+        })
+        response.headers.add("Content-Security-Policy", "default-src 'self'")
+        return response
+
     @app.errorhandler(413)
     def request_entity_too_large(error):
         return jsonify({'error': 'File too large. Maximum size is 2.2MB'}), 413
