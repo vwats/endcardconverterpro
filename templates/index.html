@@ -20,11 +20,11 @@
         <header class="py-4 mb-5 border-bottom border-dark">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
-                    <div class="me-3 p-2 rounded-circle" style="background: rgba(99, 102, 241, 0.1);">
-                        <i class="fas fa-crop-alt fs-4 text-primary"></i>
+                    <div class="me-3 p-2 rounded-circle shimmer" style="background: rgba(99, 102, 241, 0.1);">
+                        <i class="fas fa-crop-alt fs-4 text-primary rotate-icon"></i>
                     </div>
                     <h1 class="gradient-text fs-3 m-0">EndCard Converter Pro</h1>
-                    <span class="badge-pro ms-2">2.0</span>
+                    <span class="badge-pro ms-2 float-animation">2.0</span>
                 </div>
                 <div class="d-flex gap-2">
                     <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">
@@ -52,10 +52,10 @@
 
                         <!-- Upload Form -->
                         <form id="combined-upload-form" class="mb-4">
-                            <div class="card bg-gradient-dark border-0 text-white mb-4">
+                            <div class="card bg-gradient-dark border-0 text-white mb-4 shimmer">
                                 <div class="card-body">
                                     <div class="d-flex">
-                                        <div class="me-3">
+                                        <div class="me-3 float-animation">
                                             <i class="fas fa-star fs-3 text-warning"></i>
                                         </div>
                                         <div>
@@ -104,8 +104,8 @@
                             </div>
 
                             <div class="d-grid gap-2 col-md-8 mx-auto mt-4">
-                                <button type="submit" class="btn btn-primary py-3" id="combined-upload-btn" disabled>
-                                    <i class="fas fa-wand-magic-sparkles me-2"></i>Generate Rotatable Endcard
+                                <button type="submit" class="btn btn-primary py-3 btn-glow" id="combined-upload-btn" disabled>
+                                    <i class="fas fa-wand-magic-sparkles me-2 rotate-icon"></i>Generate Rotatable Endcard
                                 </button>
                             </div>
                         </form>
@@ -129,9 +129,9 @@
                             <li><i class="fas fa-check-circle"></i> Conversion history tracking</li>
                         </ul>
 
-                        <div class="mt-4 p-3 rounded" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2);">
+                        <div class="mt-4 p-3 rounded shimmer" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2);">
                             <h6 class="d-flex align-items-center">
-                                <i class="fas fa-coins text-warning me-2"></i>
+                                <i class="fas fa-coins text-warning me-2 float-animation"></i>
                                 Credit System
                             </h6>
                             <p class="small mb-2">One credit per conversion. Get more credits to continue converting!</p>
@@ -187,35 +187,37 @@
                                     </div>
                                     <div>
                                         <button id="rotate-preview-btn" class="btn btn-sm btn-secondary me-2">
-                                            <i class="fas fa-sync-alt me-1"></i> Rotate
+                                            <i class="fas fa-sync-alt me-1 rotate-icon"></i> Rotate
                                         </button>
-                                        <button id="download-endcard-btn" class="btn btn-sm btn-primary">
+                                        <button id="download-endcard-btn" class="btn btn-sm btn-primary btn-glow">
                                             <i class="fas fa-download me-1"></i> Download
                                         </button>
                                     </div>
                                 </div>
                                 <div class="card-body d-flex flex-column align-items-center p-4">
-                                    <div id="preview-container" class="preview-container portrait-container mb-3">
+                                    <div id="preview-container" class="preview-container portrait-container mb-3 shimmer">
                                         <iframe id="endcard-preview" class="preview-frame" src="about:blank"></iframe>
                                     </div>
                                     <div class="text-center mt-3">
                                         <p class="small text-secondary mb-1">This endcard will automatically rotate based on device orientation</p>
                                         <div class="d-flex justify-content-center gap-3 mt-2">
-                                            <span class="badge bg-dark px-3 py-2">
-                                                <i class="fas fa-mobile-alt me-2"></i> 9:16 Portrait
+                                            <span class="badge bg-dark px-3 py-2 position-relative" style="overflow: hidden;">
+                                                <i class="fas fa-mobile-alt me-2 rotate-icon"></i> 9:16 Portrait
+                                                <span class="position-absolute" style="top: 0; left: 0; width: 100%; height: 2px; background: var(--gradient-primary); opacity: 0.7;"></span>
                                             </span>
-                                            <span class="badge bg-dark px-3 py-2">
-                                                <i class="fas fa-tablet-alt me-2"></i> 16:9 Landscape
+                                            <span class="badge bg-dark px-3 py-2 position-relative" style="overflow: hidden;">
+                                                <i class="fas fa-tablet-alt me-2 rotate-icon"></i> 16:9 Landscape
+                                                <span class="position-absolute" style="top: 0; left: 0; width: 100%; height: 2px; background: var(--gradient-primary); opacity: 0.7;"></span>
                                             </span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="alert alert-info mt-4">
+                            <div class="alert alert-info mt-4 shimmer" style="background-color: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.2);">
                                 <div class="d-flex">
-                                    <div class="me-3">
-                                        <i class="fas fa-info-circle fs-4"></i>
+                                    <div class="me-3 d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15)); border-radius: 50%;">
+                                        <i class="fas fa-info-circle fs-4 text-primary"></i>
                                     </div>
                                     <div>
                                         <h6 class="alert-heading">About Rotatable Endcards</h6>
@@ -232,17 +234,40 @@
         <footer class="py-4 mt-5 text-center border-top border-dark">
             <div class="row">
                 <div class="col-md-6 text-md-start">
-                    <p class="mb-0">&copy; 2025 EndCard Converter Pro</p>
+                    <p class="mb-0 d-flex align-items-center">
+                        <span class="me-2 shimmer" style="display: inline-block; width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));">
+                            <i class="fas fa-crop-alt" style="font-size: 12px; color: var(--primary-accent); line-height: 24px;"></i>
+                        </span>
+                        &copy; 2025 EndCard Converter Pro
+                    </p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <p class="mb-0">
-                        <a href="/upgrade" class="text-decoration-none text-secondary me-3">Upgrade</a>
-                        <a href="/history" class="text-decoration-none text-secondary me-3">History</a>
-                        <a href="#" class="text-decoration-none text-secondary">Support</a>
+                        <a href="/upgrade" class="text-decoration-none text-secondary me-3 position-relative" style="transition: all 0.3s ease;">
+                            <i class="fas fa-crown me-1 text-warning"></i> Upgrade
+                            <span class="position-absolute" style="height: 1px; background: var(--gradient-primary); bottom: -2px; left: 0; right: 0; transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease;"></span>
+                        </a>
+                        <a href="/history" class="text-decoration-none text-secondary me-3 position-relative" style="transition: all 0.3s ease;">
+                            <i class="fas fa-history me-1 text-primary"></i> History
+                            <span class="position-absolute" style="height: 1px; background: var(--gradient-primary); bottom: -2px; left: 0; right: 0; transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease;"></span>
+                        </a>
+                        <a href="#" class="text-decoration-none text-secondary position-relative" style="transition: all 0.3s ease;">
+                            <i class="fas fa-question-circle me-1 text-primary"></i> Support
+                            <span class="position-absolute" style="height: 1px; background: var(--gradient-primary); bottom: -2px; left: 0; right: 0; transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease;"></span>
+                        </a>
                     </p>
                 </div>
             </div>
         </footer>
+        
+        <style>
+            footer a:hover {
+                color: var(--text-primary) !important;
+            }
+            footer a:hover .position-absolute {
+                transform: scaleX(1);
+            }
+        </style>
     </div>
 
     <!-- Bootstrap JS Bundle -->
