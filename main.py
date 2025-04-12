@@ -1,4 +1,7 @@
-from app import app  # noqa: F401
 
-# This file is needed for Replit to run the Flask app
-# The actual application code is in app.py
+from app import create_app
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)
