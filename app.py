@@ -162,8 +162,6 @@ def upload_combined():
         
         temp_files.extend([portrait_path, landscape_path])
                     
-                    logger.debug(f"File saved at {file_path}")
-                    
                     # Determine file type and mime type
                     extension = os.path.splitext(filename)[1].lower()
                     file_type = 'video' if extension == '.mp4' else 'image'
