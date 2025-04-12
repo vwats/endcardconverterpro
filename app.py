@@ -228,25 +228,25 @@ def upload_combined():
                     os.remove(temp_file)
             except Exception as e:
                 logger.error(f"Failed to remove temporary file {temp_file}: {e}")
-                    
-                    # Set response data
-        rotatable_html = endcard_data['rotatable']
-        
-        # Clean up temporary file
-        try:
-            os.remove(file_path)
-        except Exception as e:
-            logger.error(f"Error removing temporary file: {e}")
-        
-        # We found a file, no need to check other field names
-        break
-        
-    except Exception as e:
-        logger.error(f"Error processing file: {e}")
-        return jsonify({'error': f'Error processing file: {str(e)}'}), 500
     
-    # Save the updated endcard record
-    db.session.commit()
+    # Set response data
+    rotatable_html = endcard_data['rotatable']
+    
+    # Clean up temporary file
+    try:
+        os.remove(file_path)
+    except Exception as e:
+        logger.error(f"Error removing temporary file: {e}")
+    
+    # We found a file, no need to check other field names
+    break
+
+except Exception as e:
+    logger.error(f"Error processing file: {e}")
+    return jsonify({'error': f'Error processing file: {str(e)}'}), 500
+
+# Save the updated endcard record
+db.session.commit()
     
     # Check if a file was processed
     if not rotatable_html:
