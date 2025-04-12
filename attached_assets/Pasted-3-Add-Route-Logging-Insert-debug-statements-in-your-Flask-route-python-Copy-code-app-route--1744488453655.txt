@@ -1,0 +1,100 @@
+3. Add Route Logging
+
+Insert debug statements in your Flask route:
+
+
+python
+ Copy code
+
+@app.route('/upload/combined', methods=['POST'])
+def upload_combined():
+    try:
+        # ... existing code ...
+        
+        logger.info(f"Generated HTML size: {len(rotatable_html)} bytes")
+        logger.debug(f"Sample HTML content: {rotatable_html[:200]}...")
+        
+        return send_file(...)
+        
+    except Exception as e:
+        logger.error(f"Download failed: {str(e)}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+4. Test Direct File Access
+
+Add a test endpoint to verify download functionality:
+
+
+python
+ Copy code
+
+@app.route('/test-download')
+def test_download():
+    test_html = "<html><body>Test</body></html>"
+    buffer = io.BytesIO(test_html.encode('utf-8'))
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name='test.html')
+Visit /test-download to confirm basic download capability
+
+
+5. Check Replit Permissions
+
+Ensure proper file system access in Replit:
+
+
+python
+ Copy code
+
+# Add temporary test to verify write permissions
+@app.route('/write-test')
+def write_test():
+    try:
+        with open('/tmp/write_test.txt', 'w') as f:
+            f.write("test")
+        return "Write successful"
+    except Exception as e:
+        return f"Write failed: {str(e)}"
+6. Frontend Fixes
+
+Update your JavaScript to handle binary responses:
+
+
+javascript
+ Copy code
+
+// If using fetch()
+fetch('/upload/combined', {
+  method: 'POST',
+  body: formData
+})
+.then(response => {
+  if (response.ok) return response.blob();
+  throw new Error('Network error');
+})
+.then(blob => {
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'endcard.html';
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+});
+7. Verify CORS Headers
+
+Add explicit CORS settings if needed:
+
+
+python
+ Copy code
+
+from flask_cors import CORS
+
+def create_app():
+    app = Flask(__name__)
+    CORS(app, expose_headers=['Content-Disposition'])
+    # ... rest of initialization ...
+
+### Critical Checks:
+1. **Response Size**: Ensure generated HTML < 5MB (Replit's response limit)
+2. **Memory Limits**: Check for "out of memory" errors in Replit console
+3. **HTTPS Links**: Confirm all asset URLs use HTTPS in generated HTML
