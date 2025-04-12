@@ -2,6 +2,7 @@ import os
 import logging
 import uuid
 import base64
+import io
 from flask import Flask, request, render_template, send_file, jsonify, flash, redirect, url_for, Response
 from werkzeug.utils import secure_filename
 from functools import wraps
@@ -255,20 +256,21 @@ def create_app():
             output_filename = f"{base_filename}_endcard.html"
             
             encoded_content = html_content.encode('utf-8')
+            buffer = io.BytesIO(encoded_content)
+            buffer.seek(0)
             
-            response = Response(
-                encoded_content,
+            return send_file(
+                buffer,
+                as_attachment=True,
                 mimetype='text/html',
+                download_name=output_filename,
                 headers={
                     'Content-Disposition': f'attachment; filename="{output_filename}"',
-                    'Content-Type': 'text/html; charset=utf-8',
                     'Cache-Control': 'no-cache, no-store, must-revalidate',
                     'Pragma': 'no-cache',
                     'Expires': '0'
                 }
             )
-            
-            return response
         except Exception as e:
             logger.error(f"Download error: {str(e)}")
             return jsonify({'error': 'Failed to generate download'}), 500
