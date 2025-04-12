@@ -3,15 +3,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>MRAID Rotatable Endcard</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
         html, body {
             width: 100%;
             height: 100%;
             overflow: hidden;
+            touch-action: manipulation;
             background-color: black;
+            position: fixed;
         }
         #content {
             position: absolute;
@@ -20,22 +26,24 @@
             width: 100%;
             height: 100%;
             cursor: pointer;
-            background-color: #000;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .media-content {
+            max-width: 100%;
+            max-height: 100%;
             width: 100%;
             height: 100%;
             object-fit: contain;
             position: absolute;
             top: 0;
             left: 0;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            display: none;
         }
         .media-content.active {
-            opacity: 1;
-            visibility: visible;
+            display: block;
         }
     </style>
 </head>
