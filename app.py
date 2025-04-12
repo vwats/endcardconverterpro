@@ -259,16 +259,13 @@ def create_app():
             buffer = io.BytesIO(encoded_content)
             buffer.seek(0)
             
-            return send_file(
-                buffer,
-                as_attachment=True,
-                mimetype='text/html',
-                download_name=output_filename,
+            return Response(
+                encoded_content,
+                mimetype='text/html; charset=utf-8',
                 headers={
                     'Content-Disposition': f'attachment; filename="{output_filename}"',
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache',
-                    'Expires': '0'
+                    'Content-Type': 'text/html; charset=utf-8',
+                    'Content-Length': str(len(encoded_content))
                 }
             )
         except Exception as e:
