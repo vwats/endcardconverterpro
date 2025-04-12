@@ -243,34 +243,43 @@ def create_app():
     @app.route('/download/<orientation>/<filename>', methods=['POST'])
     @no_size_limit
     def download_endcard(orientation, filename):
-        # Allow 'rotatable' in addition to portrait and landscape
+        logger.debug(f"Download request for {orientation} orientation, filename: {filename}")
+        
         if orientation not in ['portrait', 'landscape', 'rotatable']:
+            logger.error(f"Invalid orientation requested: {orientation}")
             return jsonify({'error': 'Invalid orientation'}), 400
 
         html_content = request.form.get('html')
         if not html_content:
+            logger.error("No HTML content provided in request")
             return jsonify({'error': 'HTML content not provided'}), 400
 
         try:
             base_filename = secure_filename(filename.rsplit('.', 1)[0])
             output_filename = f"{base_filename}_endcard.html"
             
-            encoded_content = html_content.encode('utf-8')
-            buffer = io.BytesIO(encoded_content)
-            buffer.seek(0)
+            logger.info(f"Processing download for {output_filename}")
+            logger.debug(f"HTML content size: {len(html_content)} bytes")
             
-            return Response(
+            encoded_content = html_content.encode('utf-8')
+            
+            response = Response(
                 encoded_content,
                 mimetype='text/html; charset=utf-8',
                 headers={
                     'Content-Disposition': f'attachment; filename="{output_filename}"',
                     'Content-Type': 'text/html; charset=utf-8',
-                    'Content-Length': str(len(encoded_content))
+                    'Content-Length': str(len(encoded_content)),
+                    'Cache-Control': 'no-cache'
                 }
             )
+            
+            logger.info(f"Download prepared successfully for {output_filename}")
+            return response
+            
         except Exception as e:
-            logger.error(f"Download error: {str(e)}")
-            return jsonify({'error': 'Failed to generate download'}), 500
+            logger.error(f"Download failed: {str(e)}", exc_info=True)
+            return jsonify({'error': str(e)}), 500
 
     # Error handler for file too large
     @app.errorhandler(413)

@@ -197,10 +197,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData
             })
             .then(response => {
-                if (!response.ok) throw new Error('Download failed');
-                return response.blob();
+                if (!response.ok) {
+                    throw new Error(`Download failed: ${response.status}`);
+                }
+                return response.text();
             })
-            .then(blob => {
+            .then(html => {
+                const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
@@ -208,8 +211,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 a.download = `${filename}.html`;
                 document.body.appendChild(a);
                 a.click();
-                window.URL.revokeObjectURL(url);
-                a.remove();
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                }, 100);
             })
             .catch(error => {
                 console.error('Download failed:', error);
