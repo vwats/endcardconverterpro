@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,9 +20,7 @@
             position: fixed;
         }
         #content {
-            position: absolute;
-            top: 0;
-            left: 0;
+            position: relative;
             width: 100%;
             height: 100%;
             cursor: pointer;
@@ -29,6 +28,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            overflow: hidden;
         }
         .media-content {
             max-width: 100%;
@@ -39,13 +39,14 @@
             position: absolute;
             top: 0;
             left: 0;
-            display: none;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         .media-content.active {
-            display: block;
-        }
-        #portrait-content.active {
-            display: block;
+            visibility: visible;
+            opacity: 1;
+            z-index: 2;
         }
     </style>
 </head>
@@ -66,15 +67,9 @@
             var landscapeContent = document.getElementById('landscape-content');
 
             function updateOrientation() {
-                if (window.innerHeight > window.innerWidth) {
-                    // Portrait mode
-                    portraitContent.classList.add('active');
-                    landscapeContent.classList.remove('active');
-                } else {
-                    // Landscape mode
-                    portraitContent.classList.remove('active');
-                    landscapeContent.classList.add('active');
-                }
+                var isPortrait = window.innerHeight > window.innerWidth;
+                portraitContent.classList.toggle('active', isPortrait);
+                landscapeContent.classList.toggle('active', !isPortrait);
             }
 
             function handleClick(e) {
@@ -92,7 +87,6 @@
                 content.addEventListener('touchend', handleClick);
             }
 
-            // Initialize orientation handling
             window.addEventListener('resize', updateOrientation);
             window.addEventListener('orientationchange', updateOrientation);
             updateOrientation();
