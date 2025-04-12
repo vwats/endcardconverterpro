@@ -44,7 +44,7 @@ def create_app():
     }
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-    app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Increase to 16MB
 
     # Initialize extensions
     db.init_app(app)
