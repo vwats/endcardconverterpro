@@ -262,20 +262,16 @@ def create_app():
             logger.debug(f"HTML content size: {len(html_content)} bytes")
             
             encoded_content = html_content.encode('utf-8')
+            buffer = io.BytesIO(encoded_content)
+            buffer.seek(0)
             
-            response = Response(
-                encoded_content,
-                mimetype='text/html; charset=utf-8',
-                headers={
-                    'Content-Disposition': f'attachment; filename="{output_filename}"',
-                    'Content-Type': 'text/html; charset=utf-8',
-                    'Content-Length': str(len(encoded_content)),
-                    'Cache-Control': 'no-cache'
-                }
+            return send_file(
+                buffer,
+                mimetype='text/html',
+                as_attachment=True,
+                download_name=output_filename,
+                max_age=0
             )
-            
-            logger.info(f"Download prepared successfully for {output_filename}")
-            return response
             
         except Exception as e:
             logger.error(f"Download failed: {str(e)}", exc_info=True)

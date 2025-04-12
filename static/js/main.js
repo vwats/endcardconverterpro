@@ -198,12 +198,13 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`Download failed: ${response.status}`);
+                    return response.json().then(data => {
+                        throw new Error(data.error || `Download failed: ${response.status}`);
+                    });
                 }
-                return response.text();
+                return response.blob();
             })
-            .then(html => {
-                const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+            .then(blob => {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
