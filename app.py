@@ -2,7 +2,7 @@ import os
 import logging
 import uuid
 import base64
-from flask import Flask, request, render_template, send_file, jsonify, flash, redirect, url_for
+from flask import Flask, request, render_template, send_file, jsonify, flash, redirect, url_for, Response
 from werkzeug.utils import secure_filename
 from functools import wraps
 import io
@@ -252,25 +252,15 @@ def create_app():
 
         try:
             base_filename = secure_filename(filename.rsplit('.', 1)[0])
-
-            # Use 'endcard' as the suffix for rotatable HTML files
-            if orientation == 'rotatable':
-                output_filename = f"{base_filename}_endcard.html"
-            else:
-                output_filename = f"{base_filename}_{orientation}.html"
-
-            encoded_content = html_content.encode('utf-8')
-            buffer = io.BytesIO(encoded_content)
-            buffer.seek(0)
-
-            return send_file(
-                buffer,
-                mimetype='text/html; charset=utf-8',
-                as_attachment=True,
-                download_name=output_filename,
-                etag=False,
-                conditional=False,
-                add_etags=False
+            output_filename = f"{base_filename}_endcard.html"
+            
+            return Response(
+                html_content,
+                mimetype='text/html',
+                headers={
+                    "Content-Disposition": f"attachment; filename={output_filename}",
+                    "Content-Type": "text/html; charset=utf-8"
+                }
             )
         except Exception as e:
             logger.error(f"Download error: {str(e)}")
