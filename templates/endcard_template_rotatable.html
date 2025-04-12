@@ -3,40 +3,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>MRAID Rotatable Endcard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MRAID Endcard</title>
     <style>
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
             width: 100%;
             height: 100%;
             overflow: hidden;
-            touch-action: manipulation;
             background-color: black;
         }
         #content {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            position: relative;
             cursor: pointer;
+            background-color: #000;
         }
         .media-content {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            position: absolute;
-            top: 0;
-            left: 0;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            display: none;
         }
         .media-content.active {
-            opacity: 1;
-            z-index: 1;
+            display: block;
         }
     </style>
 </head>
@@ -55,18 +48,18 @@
             var content = document.getElementById('content');
             var portraitContent = document.getElementById('portrait-content');
             var landscapeContent = document.getElementById('landscape-content');
-
-            function updateOrientation() {
-                var isPortrait = window.innerHeight > window.innerWidth;
-                portraitContent.classList.toggle('active', isPortrait);
-                landscapeContent.classList.toggle('active', !isPortrait);
-            }
-
+            
             function handleClick(e) {
                 e.preventDefault();
                 if (typeof mraid !== 'undefined') {
                     mraid.open(window.mraidRedirectUrl || 'store://details');
                 }
+            }
+
+            function handleOrientation() {
+                var isPortrait = window.innerHeight > window.innerWidth;
+                portraitContent.classList.toggle('active', isPortrait);
+                landscapeContent.classList.toggle('active', !isPortrait);
             }
 
             function initAd() {
@@ -75,11 +68,9 @@
                 }
                 content.addEventListener('click', handleClick);
                 content.addEventListener('touchend', handleClick);
+                window.addEventListener('resize', handleOrientation);
+                handleOrientation();
             }
-
-            window.addEventListener('resize', updateOrientation);
-            window.addEventListener('orientationchange', updateOrientation);
-            updateOrientation();
 
             if (typeof mraid !== 'undefined') {
                 if (mraid.getState() === 'loading') {
