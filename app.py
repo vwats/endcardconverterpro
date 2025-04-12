@@ -123,32 +123,44 @@ def upload_combined():
         db.session.add(endcard)
         db.session.commit()
     
-    # Process the uploaded file (we only need one file now)
-    for field_name in ['media_file', 'portrait_file', 'landscape_file']:  # Support multiple field names for compatibility
-        if field_name in request.files:
-            uploaded_file = request.files[field_name]
-            
-            if uploaded_file and uploaded_file.filename != '':
-                # Validate file type
-                if not allowed_file(uploaded_file.filename):
-                    return jsonify({'error': f'Invalid file type. Allowed types: {", ".join(ALLOWED_EXTENSIONS)}'}), 400
-                
-                try:
-                    # Check file size before saving
-                    uploaded_file.seek(0, os.SEEK_END)
-                    file_size = uploaded_file.tell()
-                    uploaded_file.seek(0)  # Reset file pointer
-                    
-                    if file_size > MAX_FILE_SIZE:
-                        return jsonify({'error': f'File exceeds the 2.2MB size limit (size: {file_size/1024/1024:.2f}MB)'}), 400
-                    
-                    # Generate a unique ID for this upload
-                    upload_id = str(uuid.uuid4())
-                    
-                    # Save the file temporarily
-                    filename = secure_filename(uploaded_file.filename)
-                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{upload_id}_{filename}")
-                    uploaded_file.save(file_path)
+    # Process portrait and landscape files
+    portrait_file = request.files.get('portrait_file')
+    landscape_file = request.files.get('landscape_file')
+    temp_files = []
+
+    try:
+        if not portrait_file or not landscape_file:
+            return jsonify({'error': 'Both portrait and landscape files are required'}), 400
+
+        for upload_file in [portrait_file, landscape_file]:
+            if not upload_file.filename:
+                return jsonify({'error': 'Empty filename provided'}), 400
+
+            if not allowed_file(upload_file.filename):
+                return jsonify({'error': f'Invalid file type for {upload_file.filename}. Allowed: {", ".join(ALLOWED_EXTENSIONS)}'}), 400
+
+            # Check file size
+            upload_file.seek(0, os.SEEK_END)
+            file_size = upload_file.tell()
+            upload_file.seek(0)
+
+            if file_size > MAX_FILE_SIZE:
+                return jsonify({'error': f'File {upload_file.filename} exceeds 2.2MB limit (size: {file_size/1024/1024:.2f}MB)'}), 400
+
+        # If validation passes, save files
+        upload_id = str(uuid.uuid4())
+        
+        # Save files with unique names
+        portrait_filename = secure_filename(portrait_file.filename)
+        landscape_filename = secure_filename(landscape_file.filename)
+        
+        portrait_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{upload_id}_portrait_{portrait_filename}")
+        landscape_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{upload_id}_landscape_{landscape_filename}")
+        
+        portrait_file.save(portrait_path)
+        landscape_file.save(landscape_path)
+        
+        temp_files.extend([portrait_path, landscape_path])
                     
                     logger.debug(f"File saved at {file_path}")
                     
@@ -188,30 +200,36 @@ def upload_combined():
                         landscape_path=landscape_path
                     )
                     
-                    # Clean up temporary files
-                    try:
-                        os.remove(portrait_path)
-                        os.remove(landscape_path)
-                    except Exception as e:
-                        logger.error(f"Error removing temporary files: {e}")
-                    
-                    # Update endcard record
-                    endcard.portrait_filename = filename
-                    endcard.portrait_file_type = file_type
-                    endcard.portrait_file_size = file_size
+                    # Update endcard record with both files
+                    endcard.portrait_filename = portrait_filename
+                    endcard.portrait_file_type = 'video' if portrait_filename.endswith('.mp4') else 'image'
+                    endcard.portrait_file_size = os.path.getsize(portrait_path)
                     endcard.portrait_created = True
                     
-                    endcard.landscape_filename = filename
-                    endcard.landscape_file_type = file_type
-                    endcard.landscape_file_size = file_size
+                    endcard.landscape_filename = landscape_filename
+                    endcard.landscape_file_type = 'video' if landscape_filename.endswith('.mp4') else 'image'
+                    endcard.landscape_file_size = os.path.getsize(landscape_path)
                     endcard.landscape_created = True
                     
                     # Store file info for response
                     file_info = {
-                        'filename': filename,
-                        'type': file_type,
-                        'size': file_size
+                        'portrait': {'filename': portrait_filename, 'size': endcard.portrait_file_size},
+                        'landscape': {'filename': landscape_filename, 'size': endcard.landscape_file_size}
                     }
+    except IOError as e:
+        logger.error(f"IO Error processing files: {e}")
+        return jsonify({'error': 'Failed to process uploaded files'}), 500
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        return jsonify({'error': 'An unexpected error occurred'}), 500
+    finally:
+        # Clean up all temporary files
+        for temp_file in temp_files:
+            try:
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+            except Exception as e:
+                logger.error(f"Failed to remove temporary file {temp_file}: {e}")
                     
                     # Set response data
                     rotatable_html = endcard_data['rotatable']
