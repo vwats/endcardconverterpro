@@ -182,35 +182,35 @@ def upload_combined():
         
         portrait_file.save(portrait_path)
         landscape_file.save(landscape_path)
-                    
-                    # Read and encode both files
-                    with open(portrait_path, 'rb') as f:
-                        portrait_data = base64.b64encode(f.read()).decode('utf-8')
-                    with open(landscape_path, 'rb') as f:
-                        landscape_data = base64.b64encode(f.read()).decode('utf-8')
-                        
-                    # Generate endcard with both orientations
-                    endcard_data = convert_to_endcard(
-                        file_path,
-                        filename,
-                        orientation='rotatable',
-                        portrait_path=portrait_path,
-                        landscape_path=landscape_path
-                    )
-                    
-                    # Update endcard record with both files
-                    endcard.portrait_filename = portrait_filename
-                    endcard.portrait_file_type = 'video' if portrait_filename.endswith('.mp4') else 'image'
-                    endcard.portrait_file_size = os.path.getsize(portrait_path)
-                    endcard.portrait_created = True
-                    
-                    endcard.landscape_filename = landscape_filename
-                    endcard.landscape_file_type = 'video' if landscape_filename.endswith('.mp4') else 'image'
-                    endcard.landscape_file_size = os.path.getsize(landscape_path)
-                    endcard.landscape_created = True
-                    
-                    # Store file info for response
-                    file_info = {
+        
+        # Read and encode both files
+        with open(portrait_path, 'rb') as f:
+            portrait_data = base64.b64encode(f.read()).decode('utf-8')
+        with open(landscape_path, 'rb') as f:
+            landscape_data = base64.b64encode(f.read()).decode('utf-8')
+            
+        # Generate endcard with both orientations
+        endcard_data = convert_to_endcard(
+            file_path,
+            filename,
+            orientation='rotatable',
+            portrait_path=portrait_path,
+            landscape_path=landscape_path
+        )
+        
+        # Update endcard record with both files
+        endcard.portrait_filename = portrait_filename
+        endcard.portrait_file_type = 'video' if portrait_filename.endswith('.mp4') else 'image'
+        endcard.portrait_file_size = os.path.getsize(portrait_path)
+        endcard.portrait_created = True
+        
+        endcard.landscape_filename = landscape_filename
+        endcard.landscape_file_type = 'video' if landscape_filename.endswith('.mp4') else 'image'
+        endcard.landscape_file_size = os.path.getsize(landscape_path)
+        endcard.landscape_created = True
+        
+        # Store file info for response
+        file_info = {
                         'portrait': {'filename': portrait_filename, 'size': endcard.portrait_file_size},
                         'landscape': {'filename': landscape_filename, 'size': endcard.landscape_file_size}
                     }
@@ -230,20 +230,20 @@ def upload_combined():
                 logger.error(f"Failed to remove temporary file {temp_file}: {e}")
                     
                     # Set response data
-                    rotatable_html = endcard_data['rotatable']
-                    
-                    # Clean up temporary file
-                    try:
-                        os.remove(file_path)
-                    except Exception as e:
-                        logger.error(f"Error removing temporary file: {e}")
-                    
-                    # We found a file, no need to check other field names
-                    break
-                    
-                except Exception as e:
-                    logger.error(f"Error processing file: {e}")
-                    return jsonify({'error': f'Error processing file: {str(e)}'}), 500
+        rotatable_html = endcard_data['rotatable']
+        
+        # Clean up temporary file
+        try:
+            os.remove(file_path)
+        except Exception as e:
+            logger.error(f"Error removing temporary file: {e}")
+        
+        # We found a file, no need to check other field names
+        break
+        
+    except Exception as e:
+        logger.error(f"Error processing file: {e}")
+        return jsonify({'error': f'Error processing file: {str(e)}'}), 500
     
     # Save the updated endcard record
     db.session.commit()
