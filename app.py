@@ -163,7 +163,7 @@ def create_app():
             temp_files.extend([portrait_path, landscape_path])
 
             # Determine file type and mime type
-            extension = os.path.splitext(portrait_filename)[1].lower() #Corrected to use portrait_filename
+            extension = os.path.splitext(portrait_filename)[1].lower()
             file_type = 'video' if extension == '.mp4' else 'image'
             mime_type = "video/mp4" if extension == '.mp4' else "image/jpeg"
             if extension == '.png':
@@ -244,38 +244,45 @@ def create_app():
     @no_size_limit
     def download_endcard(orientation, filename):
         logger.debug(f"Download request for {orientation} orientation, filename: {filename}")
-        
+
         if orientation not in ['portrait', 'landscape', 'rotatable']:
             logger.error(f"Invalid orientation requested: {orientation}")
             return jsonify({'error': 'Invalid orientation'}), 400
 
-        html_content = request.form.get('html')
-        if not html_content:
-            logger.error("No HTML content provided in request")
-            return jsonify({'error': 'HTML content not provided'}), 400
-
         try:
+            html_content = request.form.get('html')
+            logger.debug(f"Received form data keys: {list(request.form.keys())}")
+
+            if not html_content:
+                logger.error("No HTML content provided in request")
+                return jsonify({'error': 'HTML content not provided'}), 400
+
+            logger.debug(f"HTML content preview: {html_content[:200]}...")
+
             base_filename = secure_filename(filename.rsplit('.', 1)[0])
             output_filename = f"{base_filename}_endcard.html"
-            
+
             logger.info(f"Processing download for {output_filename}")
             logger.debug(f"HTML content size: {len(html_content)} bytes")
-            
+
             encoded_content = html_content.encode('utf-8')
             buffer = io.BytesIO(encoded_content)
             buffer.seek(0)
-            
-            return send_file(
+
+            response = send_file(
                 buffer,
                 mimetype='text/html',
                 as_attachment=True,
                 download_name=output_filename,
                 max_age=0
             )
-            
+
+            logger.debug("Successfully created response")
+            return response
+
         except Exception as e:
             logger.error(f"Download failed: {str(e)}", exc_info=True)
-            return jsonify({'error': str(e)}), 500
+            return jsonify({'error': f"Download failed: {str(e)}"}), 500
 
     # Error handler for file too large
     @app.errorhandler(413)
