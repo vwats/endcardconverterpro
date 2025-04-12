@@ -178,8 +178,8 @@ def create_app():
 
             # Generate endcard with both orientations
             endcard_data = convert_to_endcard(
-                None, #Removed file_path as it's not used in the function
-                None, #Removed filename as it's not used in the function
+                portrait_path,
+                portrait_filename,
                 orientation='rotatable',
                 portrait_path=portrait_path,
                 landscape_path=landscape_path
