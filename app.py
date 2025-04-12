@@ -255,19 +255,18 @@ def create_app():
             output_filename = f"{base_filename}_endcard.html"
             
             encoded_content = html_content.encode('utf-8')
-            buffer = io.BytesIO(encoded_content)
-            buffer.seek(0)
             
-            response = send_file(
-                buffer,
+            response = Response(
+                encoded_content,
                 mimetype='text/html',
-                as_attachment=True,
-                download_name=output_filename
+                headers={
+                    'Content-Disposition': f'attachment; filename="{output_filename}"',
+                    'Content-Type': 'text/html; charset=utf-8',
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
             )
-            
-            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-            response.headers['Pragma'] = 'no-cache'
-            response.headers['Expires'] = '0'
             
             return response
         except Exception as e:
