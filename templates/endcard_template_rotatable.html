@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -55,7 +54,7 @@
             var portraitContent = document.getElementById('portrait-content');
             var landscapeContent = document.getElementById('landscape-content');
             var media = portraitContent; // Default to portrait media
-            
+
             function handleClick(e) {
                 e.preventDefault();
                 if (typeof mraid !== 'undefined') {
@@ -65,6 +64,8 @@
 
             function handleOrientation() {
                 var isPortrait = window.innerHeight > window.innerWidth;
+                portraitContent.style.display = isPortrait ? 'block' : 'none';
+                landscapeContent.style.display = isPortrait ? 'none' : 'block';
                 portraitContent.classList.toggle('active', isPortrait);
                 landscapeContent.classList.toggle('active', !isPortrait);
                 media = isPortrait ? portraitContent : landscapeContent;
