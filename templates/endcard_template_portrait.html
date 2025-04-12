@@ -44,8 +44,11 @@
             
             function handleClick(e) {
                 e.preventDefault();
+                var clickUrl = window.clickUrl || window.mraidRedirectUrl || 'store://details';
                 if (typeof mraid !== 'undefined') {
-                    mraid.open(window.mraidRedirectUrl || 'store://details');
+                    mraid.open(clickUrl);
+                } else {
+                    window.open(clickUrl, '_blank');
                 }
             }
 
