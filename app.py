@@ -172,16 +172,16 @@ def upload_combined():
         # Process both portrait and landscape files
         portrait_file = request.files['portrait_file']
         landscape_file = request.files['landscape_file']
-                    
-                    if not portrait_file or not landscape_file:
-                        return jsonify({'error': 'Both portrait and landscape files are required'}), 400
-                        
-                    # Save both files temporarily
-                    portrait_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{upload_id}_portrait_{filename}")
-                    landscape_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{upload_id}_landscape_{filename}")
-                    
-                    portrait_file.save(portrait_path)
-                    landscape_file.save(landscape_path)
+        
+        if not portrait_file or not landscape_file:
+            return jsonify({'error': 'Both portrait and landscape files are required'}), 400
+            
+        # Save both files temporarily
+        portrait_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{upload_id}_portrait_{filename}")
+        landscape_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{upload_id}_landscape_{filename}")
+        
+        portrait_file.save(portrait_path)
+        landscape_file.save(landscape_path)
                     
                     # Read and encode both files
                     with open(portrait_path, 'rb') as f:
