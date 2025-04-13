@@ -303,6 +303,45 @@ def create_app():
         response.headers.add("Content-Security-Policy", "default-src 'self'")
         return response
 
+    @app.route('/create-checkout-session', methods=['POST'])
+    def create_checkout_session():
+        package = request.form.get('package')
+        
+        # Map package names to Stripe price IDs
+        price_ids = {
+            'starter': 'price_starter',  # Replace with your actual Stripe price ID
+            'popular': 'price_popular',  # Replace with your actual Stripe price ID
+            'pro': 'price_pro'          # Replace with your actual Stripe price ID
+        }
+        
+        if package not in price_ids:
+            return jsonify({'error': 'Invalid package selected'}), 400
+            
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price': price_ids[package],
+                    'quantity': 1,
+                }],
+                mode='payment',
+                success_url=request.host_url + 'payment/success',
+                cancel_url=request.host_url + 'payment/cancel',
+            )
+            return jsonify({'id': checkout_session.id})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 403
+
+    @app.route('/payment/success')
+    def payment_success():
+        flash('Payment successful! Your credits have been added.', 'success')
+        return redirect(url_for('index'))
+
+    @app.route('/payment/cancel')
+    def payment_cancel():
+        flash('Payment cancelled.', 'warning')
+        return redirect(url_for('upgrade'))
+
     @app.errorhandler(413)
     def request_entity_too_large(error):
         return jsonify({'error': 'File too large. Maximum size is 2.2MB'}), 413
