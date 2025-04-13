@@ -189,12 +189,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!currentData) return;
 
             const filename = `endcard_${currentOrientation}`;
-            const formData = new FormData();
-            formData.append('html', currentOrientation === 'portrait' ? currentData.portrait : currentData.landscape);
+            const htmlContent = currentOrientation === 'portrait' ? currentData.portrait : currentData.landscape;
 
             fetch(`/download/${currentOrientation}/${filename}`, {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'text/html'
+                },
+                body: htmlContent
             })
             .then(response => {
                 if (!response.ok) {

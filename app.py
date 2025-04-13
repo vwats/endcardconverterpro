@@ -250,12 +250,17 @@ def create_app():
             return jsonify({'error': 'Invalid orientation'}), 400
 
         try:
-            html_content = request.get_data().decode('utf-8')
+            if request.content_type and 'multipart/form-data' in request.content_type:
+                html_content = request.form.get('html')
+            else:
+                html_content = request.get_data().decode('utf-8')
+
             if not html_content:
-                logger.error("No content provided in request")
-                return jsonify({'error': 'Content not provided'}), 400
+                logger.error("No HTML content provided in request")
+                return jsonify({'error': 'HTML content not provided'}), 400
 
             logger.debug(f"Content size: {len(html_content)} bytes")
+            logger.debug(f"Content type: {request.content_type}")
 
             base_filename = secure_filename(filename.rsplit('.', 1)[0])
             output_filename = f"{base_filename}_endcard.html"
