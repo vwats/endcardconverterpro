@@ -209,9 +209,10 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(blob => {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
+                const originalFilename = filename.startsWith('endcard_') ? filename.substring(8) : filename;
                 a.style.display = 'none';
                 a.href = url;
-                a.download = `${filename}.html`;
+                a.download = `${originalFilename}_endcard.html`;
                 document.body.appendChild(a);
                 a.click();
                 setTimeout(() => {
