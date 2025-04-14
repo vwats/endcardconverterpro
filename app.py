@@ -8,8 +8,12 @@ from werkzeug.utils import secure_filename
 from functools import wraps
 import io
 from werkzeug.middleware.proxy_fix import ProxyFix
+import stripe
 from models import db, User, Endcard
 from utils.endcard_converter import convert_to_endcard
+
+# Initialize Stripe
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -307,12 +311,19 @@ def create_app():
     def create_checkout_session():
         package = request.form.get('package')
         
-        # Map package names to Stripe price IDs
-        price_ids = {
-            'starter': 'price_starter',  # Replace with your actual Stripe price ID
-            'popular': 'price_popular',  # Replace with your actual Stripe price ID
-            'pro': 'price_pro'          # Replace with your actual Stripe price ID
+        # Map package names to Stripe price IDs and credits
+        packages = {
+            'starter': {'price': 'price_H5...', 'credits': 10},  # Replace with your price ID
+            'popular': {'price': 'price_G7...', 'credits': 30},  # Replace with your price ID
+            'pro': {'price': 'price_K9...', 'credits': 60}       # Replace with your price ID
         }
+        
+        if package not in packages:
+            return jsonify({'error': 'Invalid package selected'}), 400
+            
+        replit_user_id = request.headers.get('X-Replit-User-Id')
+        if not replit_user_id:
+            return jsonify({'error': 'User not authenticated'}), 401
         
         if package not in price_ids:
             return jsonify({'error': 'Invalid package selected'}), 400
@@ -321,12 +332,16 @@ def create_app():
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[{
-                    'price': price_ids[package],
+                    'price': packages[package]['price'],
                     'quantity': 1,
                 }],
                 mode='payment',
-                success_url=request.host_url + 'payment/success',
+                success_url=request.host_url + 'payment/success?session_id={CHECKOUT_SESSION_ID}',
                 cancel_url=request.host_url + 'payment/cancel',
+                metadata={
+                    'replit_user_id': replit_user_id,
+                    'credits': packages[package]['credits']
+                }
             )
             return jsonify({'id': checkout_session.id})
         except Exception as e:
@@ -334,7 +349,26 @@ def create_app():
 
     @app.route('/payment/success')
     def payment_success():
-        flash('Payment successful! Your credits have been added.', 'success')
+        session_id = request.args.get('session_id')
+        if not session_id:
+            flash('Invalid payment session', 'error')
+            return redirect(url_for('upgrade'))
+            
+        try:
+            session = stripe.checkout.Session.retrieve(session_id)
+            if session.payment_status == 'paid':
+                user = User.query.filter_by(replit_id=session.metadata.replit_user_id).first()
+                if user:
+                    user.credits += int(session.metadata.credits)
+                    db.session.commit()
+                    flash(f'Payment successful! {session.metadata.credits} credits have been added.', 'success')
+                else:
+                    flash('User not found', 'error')
+            else:
+                flash('Payment not completed', 'error')
+        except Exception as e:
+            flash('Error processing payment', 'error')
+            
         return redirect(url_for('index'))
 
     @app.route('/payment/cancel')
