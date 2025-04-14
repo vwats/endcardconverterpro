@@ -96,7 +96,7 @@ args = "pkill gunicorn || true"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 --log-level debug main:app"
+args = "gunicorn --bind 0.0.0.0:5000 --workers 2 --timeout 120 --log-level debug --error-logfile - --capture-output --reload main:app"
 
 [[ports]]
 localPort = 5000

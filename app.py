@@ -12,16 +12,16 @@ import stripe
 from models import db, User, Endcard
 from utils.endcard_converter import convert_to_endcard
 
-# Initialize Stripe
+# Configure logging first
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+# Initialize Stripe with error handling
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 if not stripe.api_key:
     logger.error("Stripe API key is not configured")
 else:
     logger.info("Stripe API key is configured")
-
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 def create_app():
     app = Flask(__name__)
