@@ -322,7 +322,15 @@ def create_app():
             if not replit_user_id:
                 return jsonify({'error': 'User not authenticated'}), 401
 
+        packages = {
+            'starter': {'price': os.environ.get('STRIPE_PRICE_STARTER'), 'credits': 10},
+            'standard': {'price': os.environ.get('STRIPE_PRICE_STANDARD'), 'credits': 30},
+            'pro': {'price': os.environ.get('STRIPE_PRICE_PRO'), 'credits': 60}
+        }
+        
         package = request.form.get('package')
+        if not package:
+            return jsonify({'error': 'No package specified'}), 400
 
         # Map package names to Stripe price IDs and credits
         packages = {
@@ -337,11 +345,17 @@ def create_app():
 
         try:
             stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+            if not stripe.api_key:
+                logger.error("Stripe API key is not set")
+                return jsonify({'error': 'Stripe configuration error'}), 500
+                
+            if package not in packages:
+                logger.error(f"Invalid package selected: {package}")
+                return jsonify({'error': 'Invalid package'}), 400
+                
             price_id = packages[package]['price']
-            
-            # Debug logging
-            print(f"Creating checkout session for package: {package}")
-            print(f"Using price ID: {price_id}")
+            logger.info(f"Creating checkout session for package: {package}")
+            logger.info(f"Using price ID: {price_id}")
             
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
@@ -358,8 +372,12 @@ def create_app():
                 }
             )
             return jsonify({'id': checkout_session.id})
-        except Exception as e:
+        except stripe.error.StripeError as e:
+            logger.error(f"Stripe error: {str(e)}")
             return jsonify({'error': str(e)}), 403
+        except Exception as e:
+            logger.error(f"Unexpected error in checkout: {str(e)}", exc_info=True)
+            return jsonify({'error': 'An unexpected error occurred'}), 500
 
     @app.route('/payment/success')
     def payment_success():
