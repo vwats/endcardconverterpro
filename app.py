@@ -356,19 +356,14 @@ def create_app():
                 logger.error(f"Invalid package selected: {package}")
                 return jsonify({'error': 'Invalid package'}), 400
 
+            price_id = packages[package]['price']
             logger.info(f"Creating checkout session for package: {package}")
-            
+            logger.info(f"Using price ID: {price_id}")
+
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[{
-                    'price_data': {
-                        'currency': 'usd',
-                        'product_data': {
-                            'name': f'{package.title()} Package',
-                            'description': f'{packages[package]["credits"]} Credits'
-                        },
-                        'unit_amount': packages[package]['credits'] * 100  # Amount in cents
-                    },
+                    'price': price_id,
                     'quantity': 1,
                 }],
                 mode='payment',
