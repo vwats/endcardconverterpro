@@ -370,6 +370,9 @@ def create_app():
                 line_items=[{
                     'price': price_id,
                     'quantity': 1,
+                    'adjustable_quantity': {
+                        'enabled': False
+                    }
                 }],
                 mode='payment',
                 success_url=request.host_url + 'payment/success?session_id={CHECKOUT_SESSION_ID}',
