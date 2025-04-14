@@ -327,7 +327,7 @@ def create_app():
         # Map package names to Stripe price IDs and credits
         packages = {
             'starter': {'price': os.environ.get('STRIPE_PRICE_STARTER'), 'credits': 10},
-            'standard': {'price': os.environ.get('STRIPE_PRICE_POPULAR'), 'credits': 30},
+            'standard': {'price': os.environ.get('STRIPE_PRICE_STANDARD'), 'credits': 30},
             'pro': {'price': os.environ.get('STRIPE_PRICE_PRO'), 'credits': 60}
         }
 
