@@ -345,7 +345,14 @@ def create_app():
                 'pro': {'price': os.environ.get('STRIPE_PRICE_ID_PRO'), 'credits': 60}
             }
 
-            if package not in packages or not packages[package]['price']:
+            if package not in packages:
+                logger.error(f"Invalid package selected: {package}")
+                return jsonify({'error': 'Invalid package selected'}), 400
+
+            price_id = packages[package]['price']
+            if not price_id or not price_id.startswith('price_'):
+                logger.error(f"Invalid price ID format for package {package}: {price_id}")
+                return jsonify({'error': 'Invalid price configuration'}), 500
                 logger.error(f"Price ID not found for package: {package}")
                 return jsonify({'error': 'Package price configuration error'}), 500
 
