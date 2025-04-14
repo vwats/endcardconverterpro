@@ -330,6 +330,10 @@ def create_app():
             if not replit_user_id:
                 return jsonify({'error': 'User not authenticated'}), 401
 
+        package = request.form.get('package')
+        if not package:
+            return jsonify({'error': 'No package specified'}), 400
+
         try:
             packages = {
                 'starter': {'price': os.environ.get('STRIPE_PRICE_ID_STARTER'), 'credits': 10},
@@ -337,29 +341,14 @@ def create_app():
                 'pro': {'price': os.environ.get('STRIPE_PRICE_ID_PRO'), 'credits': 60}
             }
 
-            if not packages[package]['price']:
+            if package not in packages or not packages[package]['price']:
                 logger.error(f"Price ID not found for package: {package}")
                 return jsonify({'error': 'Package price configuration error'}), 500
 
-        package = request.form.get('package')
-        if not package:
-            return jsonify({'error': 'No package specified'}), 400
-
-        # Map package names to Stripe price IDs and credits
-
-        if package not in packages:
-            return jsonify({'error': 'Invalid package selected'}), 400
-
-
-        try:
             stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
             if not stripe.api_key:
                 logger.error("Stripe API key is not set")
                 return jsonify({'error': 'Stripe configuration error'}), 500
-
-            if package not in packages:
-                logger.error(f"Invalid package selected: {package}")
-                return jsonify({'error': 'Invalid package'}), 400
 
             price_id = packages[package]['price']
             logger.info(f"Creating checkout session for package: {package}")
