@@ -331,21 +331,16 @@ def create_app():
                 return jsonify({'error': 'User not authenticated'}), 401
 
         packages = {
-            'starter': {'price': os.environ.get('STRIPE_PRICE_STARTER'), 'credits': 10},
-            'standard': {'price': os.environ.get('STRIPE_PRICE_STANDARD'), 'credits': 30},
-            'pro': {'price': os.environ.get('STRIPE_PRICE_PRO'), 'credits': 60}
+            'starter': {'price': os.environ.get('STRIPE_PRICE_ID_STARTER'), 'credits': 10},
+            'standard': {'price': os.environ.get('STRIPE_PRICE_ID_STANDARD'), 'credits': 30},
+            'pro': {'price': os.environ.get('STRIPE_PRICE_ID_PRO'), 'credits': 60}
         }
-        
+
         package = request.form.get('package')
         if not package:
             return jsonify({'error': 'No package specified'}), 400
 
         # Map package names to Stripe price IDs and credits
-        packages = {
-            'starter': {'price': os.environ.get('STRIPE_PRICE_STARTER'), 'credits': 10},
-            'standard': {'price': os.environ.get('STRIPE_PRICE_STANDARD'), 'credits': 30},
-            'pro': {'price': os.environ.get('STRIPE_PRICE_PRO'), 'credits': 60}
-        }
 
         if package not in packages:
             return jsonify({'error': 'Invalid package selected'}), 400
@@ -356,15 +351,15 @@ def create_app():
             if not stripe.api_key:
                 logger.error("Stripe API key is not set")
                 return jsonify({'error': 'Stripe configuration error'}), 500
-                
+
             if package not in packages:
                 logger.error(f"Invalid package selected: {package}")
                 return jsonify({'error': 'Invalid package'}), 400
-                
+
             price_id = packages[package]['price']
             logger.info(f"Creating checkout session for package: {package}")
             logger.info(f"Using price ID: {price_id}")
-            
+
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[{
