@@ -330,11 +330,16 @@ def create_app():
             if not replit_user_id:
                 return jsonify({'error': 'User not authenticated'}), 401
 
-        packages = {
-            'starter': {'price': os.environ.get('STRIPE_PRICE_ID_STARTER'), 'credits': 10},
-            'standard': {'price': os.environ.get('STRIPE_PRICE_ID_STANDARD'), 'credits': 30},
-            'pro': {'price': os.environ.get('STRIPE_PRICE_ID_PRO'), 'credits': 60}
-        }
+        try:
+            packages = {
+                'starter': {'price': os.environ.get('STRIPE_PRICE_ID_STARTER'), 'credits': 10},
+                'standard': {'price': os.environ.get('STRIPE_PRICE_ID_STANDARD'), 'credits': 30},
+                'pro': {'price': os.environ.get('STRIPE_PRICE_ID_PRO'), 'credits': 60}
+            }
+
+            if not packages[package]['price']:
+                logger.error(f"Price ID not found for package: {package}")
+                return jsonify({'error': 'Package price configuration error'}), 500
 
         package = request.form.get('package')
         if not package:
