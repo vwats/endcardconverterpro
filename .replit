@@ -8,7 +8,7 @@ deploymentTarget = "autoscale"
 run = ["sh", "-c", "gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 main:app"]
 
 [workflows]
-runButton = "Production Server"
+runButton = "Production Server Debug"
 
 [[workflows.workflow]]
 name = "Project"
@@ -76,6 +76,27 @@ args = "pkill gunicorn || true"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 main:app"
+
+[[workflows.workflow]]
+name = "Production Server Debug"
+author = 40702119
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "export PRODUCTION=true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "export FLASK_DEBUG=true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill gunicorn || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 --log-level debug main:app"
 
 [[ports]]
 localPort = 5000
