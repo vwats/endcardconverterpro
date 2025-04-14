@@ -8,7 +8,7 @@ deploymentTarget = "autoscale"
 run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
 
 [workflows]
-runButton = "Project"
+runButton = "Restart Server"
 
 [[workflows.workflow]]
 name = "Project"
@@ -36,6 +36,19 @@ waitForPort = 5000
 
 [[workflows.workflow]]
 name = "Restart Application"
+author = 40702119
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill gunicorn || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
+
+[[workflows.workflow]]
+name = "Restart Server"
 author = 40702119
 mode = "sequential"
 
