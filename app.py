@@ -309,25 +309,26 @@ def create_app():
 
     @app.route('/create-checkout-session', methods=['POST'])
     def create_checkout_session():
+        if not os.environ.get('PRODUCTION'):
+            replit_user_id = 'dev_user'
+        else:
+            replit_user_id = request.headers.get('X-Replit-User-Id')
+            if not replit_user_id:
+                return jsonify({'error': 'User not authenticated'}), 401
+
         package = request.form.get('package')
-        
+
         # Map package names to Stripe price IDs and credits
         packages = {
             'starter': {'price': 'price_H5...', 'credits': 10},  # Replace with your price ID
             'popular': {'price': 'price_G7...', 'credits': 30},  # Replace with your price ID
             'pro': {'price': 'price_K9...', 'credits': 60}       # Replace with your price ID
         }
-        
+
         if package not in packages:
             return jsonify({'error': 'Invalid package selected'}), 400
-            
-        replit_user_id = request.headers.get('X-Replit-User-Id')
-        if not replit_user_id:
-            return jsonify({'error': 'User not authenticated'}), 401
-        
-        if package not in price_ids:
-            return jsonify({'error': 'Invalid package selected'}), 400
-            
+
+
         try:
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
@@ -353,7 +354,7 @@ def create_app():
         if not session_id:
             flash('Invalid payment session', 'error')
             return redirect(url_for('upgrade'))
-            
+
         try:
             session = stripe.checkout.Session.retrieve(session_id)
             if session.payment_status == 'paid':
@@ -368,7 +369,7 @@ def create_app():
                 flash('Payment not completed', 'error')
         except Exception as e:
             flash('Error processing payment', 'error')
-            
+
         return redirect(url_for('index'))
 
     @app.route('/payment/cancel')
