@@ -80,7 +80,15 @@ def create_app():
 
     @app.route('/upgrade')
     def upgrade():
-        return render_template('upgrade.html')
+        try:
+            stripe_key = os.environ.get('STRIPE_PUBLISHABLE_KEY')
+            if not stripe_key:
+                logger.error("Stripe publishable key is missing")
+                return "Stripe configuration error", 500
+            return render_template('upgrade.html', stripe_key=stripe_key)
+        except Exception as e:
+            logger.error(f"Error rendering upgrade page: {str(e)}")
+            return "Internal server error", 500
 
     @app.route('/upload/combined', methods=['POST'])
     @no_size_limit
