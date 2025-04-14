@@ -326,9 +326,9 @@ def create_app():
 
         # Map package names to Stripe price IDs and credits
         packages = {
-            'starter': {'price': 'price_H5...', 'credits': 10},  # Replace with your price ID
-            'popular': {'price': 'price_G7...', 'credits': 30},  # Replace with your price ID
-            'pro': {'price': 'price_K9...', 'credits': 60}       # Replace with your price ID
+            'starter': {'price': os.environ.get('STRIPE_PRICE_STARTER'), 'credits': 10},
+            'popular': {'price': os.environ.get('STRIPE_PRICE_POPULAR'), 'credits': 30},
+            'pro': {'price': os.environ.get('STRIPE_PRICE_PRO'), 'credits': 60}
         }
 
         if package not in packages:
