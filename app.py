@@ -266,8 +266,14 @@ def create_app():
             logger.debug(f"Content size: {len(html_content)} bytes")
             logger.debug(f"Content type: {request.content_type}")
 
-            base_filename = secure_filename(filename.rsplit('.', 1)[0])
-            output_filename = f"{base_filename}_endcard.html"
+            # Strip any path and get just the filename
+            original_filename = filename.split('/')[-1]
+            # Remove "endcard_" prefix if it exists
+            if original_filename.startswith('endcard_'):
+                original_filename = original_filename[8:]
+            # Remove any existing extension
+            original_filename = original_filename.rsplit('.', 1)[0]
+            output_filename = f"{original_filename}_endcard.html"
 
             logger.info(f"Processing download for {output_filename}")
             logger.debug(f"HTML content size: {len(html_content)} bytes")
