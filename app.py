@@ -350,11 +350,13 @@ def create_app():
                 return jsonify({'error': 'Invalid package selected'}), 400
 
             price_id = packages[package]['price']
-            if not price_id or not price_id.startswith('price_'):
-                logger.error(f"Invalid price ID format for package {package}: {price_id}")
-                return jsonify({'error': 'Invalid price configuration'}), 500
-                logger.error(f"Price ID not found for package: {package}")
-                return jsonify({'error': 'Package price configuration error'}), 500
+            if not price_id:
+                logger.error(f"Price ID is missing for package {package}")
+                return jsonify({'error': 'Price ID is missing'}), 500
+
+            if not isinstance(price_id, str) or not price_id.startswith('price_'):
+                logger.error(f"Invalid Stripe price ID format for {package}: {price_id}")
+                return jsonify({'error': 'Invalid Stripe price ID format'}), 500
 
             stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
             if not stripe.api_key:
