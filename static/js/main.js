@@ -209,10 +209,11 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(blob => {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                const originalFilename = filename.startsWith('endcard_') ? filename.substring(8) : filename;
+                const baseName = filename.startsWith('endcard_') ? filename.substring(8) : filename;
+                const cleanName = baseName.replace(/\.[^/.]+$/, ''); // Remove file extension
                 a.style.display = 'none';
                 a.href = url;
-                a.download = `${originalFilename}_endcard.html`;
+                a.download = `${cleanName}_endcard.html`;
                 document.body.appendChild(a);
                 a.click();
                 setTimeout(() => {
