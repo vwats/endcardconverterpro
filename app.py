@@ -14,6 +14,10 @@ from utils.endcard_converter import convert_to_endcard
 
 # Initialize Stripe
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+if not stripe.api_key:
+    logger.error("Stripe API key is not configured")
+else:
+    logger.info("Stripe API key is configured")
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
