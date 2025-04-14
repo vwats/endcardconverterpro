@@ -336,10 +336,17 @@ def create_app():
 
 
         try:
+            stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+            price_id = packages[package]['price']
+            
+            # Debug logging
+            print(f"Creating checkout session for package: {package}")
+            print(f"Using price ID: {price_id}")
+            
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[{
-                    'price': packages[package]['price'],
+                    'price': price_id,
                     'quantity': 1,
                 }],
                 mode='payment',
