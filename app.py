@@ -345,9 +345,18 @@ def create_app():
                 'pro': {'price': os.environ.get('STRIPE_PRICE_ID_PRO'), 'credits': 60}
             }
 
+            # Debug log current package selection and configuration
+            logger.debug(f"Selected package: {package}")
+            logger.debug(f"Available packages: {packages}")
+
             if package not in packages:
                 logger.error(f"Invalid package selected: {package}")
                 return jsonify({'error': 'Invalid package selected'}), 400
+
+            # Validate package price configuration
+            if not packages[package]['price']:
+                logger.error(f"Price ID missing for package {package}")
+                return jsonify({'error': 'Package price not configured'}), 500
 
             price_id = packages[package]['price']
             if not price_id:
