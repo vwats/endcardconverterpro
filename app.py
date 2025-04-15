@@ -339,6 +339,12 @@ def create_app():
             return jsonify({'error': 'No package specified'}), 400
 
         try:
+            # Debug: Print environment variables
+            logger.debug(f"STRIPE_SECRET_KEY set: {'Yes' if stripe.api_key else 'No'}")
+            logger.debug(f"STRIPE_PRICE_ID_STARTER: {os.environ.get('STRIPE_PRICE_ID_STARTER')}")
+            logger.debug(f"STRIPE_PRICE_ID_STANDARD: {os.environ.get('STRIPE_PRICE_ID_STANDARD')}")
+            logger.debug(f"STRIPE_PRICE_ID_PRO: {os.environ.get('STRIPE_PRICE_ID_PRO')}")
+
             packages = {
                 'starter': {'price': os.environ.get('STRIPE_PRICE_ID_STARTER'), 'credits': 10},
                 'standard': {'price': os.environ.get('STRIPE_PRICE_ID_STANDARD'), 'credits': 30},
