@@ -5,7 +5,7 @@ channel = "stable-24_05"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 main:app"]
+run = ["sh", "-c", "export PRODUCTION=true && export STRIPE_PRICE_ID_STARTER=price_1RDmKVCWLRg1e41pTz5s7HAo && export STRIPE_PRICE_ID_STANDARD=price_1RDmKVCWLRg1e41pTz5s7HAo && export STRIPE_PRICE_ID_PRO=price_1RDmKVCWLRg1e41pTz5s7HAo && gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 main:app"]
 
 [workflows]
 runButton = "Production Server Debug"
