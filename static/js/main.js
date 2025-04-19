@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     endcardIdField.value = data.endcard_id;
                     currentEndcardId = data.endcard_id;
                 }
+                handleUploadSuccess(data);
             .catch(error => {
                 console.error('Payment setup failed:', error);
                 alert(`Payment setup failed: ${error.message}`);
