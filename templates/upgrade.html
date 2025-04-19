@@ -130,26 +130,12 @@
                                             <span class="badge bg-dark fs-6 mb-1 d-block py-2">60 Credits</span>
                                             <span class="text-secondary-accent small" style="color: #8b5cf6;">$0.75 per credit</span>
                                         </p>
-                                        <button onclick="startCheckout('pro')" class="btn btn-primary w-100 py-2" style="background: linear-gradient(90deg, #8b5cf6, #6366f1);">
-                                            <i class="fas fa-shopping-cart me-2"></i>Buy Now
-                                        </button>
-                                        <script>
-                                        async function startCheckout(package) {
-                                            try {
-                                                const response = await fetch('/create-checkout-session', {
-                                                    method: 'POST',
-                                                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                                                    body: `package=${package}`
-                                                });
-                                                const data = await response.json();
-                                                if (data.error) throw new Error(data.error);
-                                                window.location.href = data.checkout_url;
-                                            } catch (error) {
-                                                console.error('Error:', error);
-                                                alert('Checkout failed: ' + error.message);
-                                            }
-                                        }
-                                        </script>
+                                        <form action="/create-checkout-session" method="POST">
+                                            <input type="hidden" name="package" value="pro">
+                                            <button type="submit" class="btn btn-primary w-100 py-2" style="background: linear-gradient(90deg, #8b5cf6, #6366f1);">
+                                                <i class="fas fa-shopping-cart me-2"></i>Buy Now
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
