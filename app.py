@@ -27,6 +27,10 @@ def create_app():
     app = Flask(__name__)
     app.secret_key = os.environ.get("SESSION_SECRET", "dev_secret_key")
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+    
+    if os.environ.get('PRODUCTION'):
+        app.config['SERVER_NAME'] = 'endcardconverter.com'
+        app.config['PREFERRED_URL_SCHEME'] = 'https'
 
     # Configure file upload settings
     UPLOAD_FOLDER = '/tmp/uploads'
