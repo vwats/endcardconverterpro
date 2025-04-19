@@ -87,12 +87,17 @@ def create_app():
         try:
             stripe_key = os.environ.get('STRIPE_PUBLISHABLE_KEY')
             if not stripe_key:
-                logger.error("Stripe publishable key is missing")
-                return "Stripe configuration error", 500
+                logger.error("STRIPE_PUBLISHABLE_KEY is missing")
+                return "Stripe configuration error: Missing publishable key", 500
+
+            if not stripe.api_key:
+                logger.error("STRIPE_SECRET_KEY is missing")
+                return "Stripe configuration error: Missing secret key", 500
+
             return render_template('upgrade.html', stripe_key=stripe_key)
         except Exception as e:
             logger.error(f"Error rendering upgrade page: {str(e)}")
-            return "Internal server error", 500
+            return str(e), 500
 
     @app.route('/upload/combined', methods=['POST'])
     @no_size_limit
@@ -344,7 +349,7 @@ def create_app():
         package = request.form.get('package')
         if not package:
             return jsonify({'error': 'No package specified'}), 400
-            
+
         if package not in ['starter', 'standard', 'pro']:
             return jsonify({'error': 'Invalid package selected'}), 400
 
