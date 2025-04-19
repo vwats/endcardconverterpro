@@ -360,12 +360,8 @@ def create_app():
             response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
             return response
 
-        if not os.environ.get('PRODUCTION'):
-            replit_user_id = 'dev_user'
-        else:
-            replit_user_id = request.headers.get('X-Replit-User-Id')
-            if not replit_user_id:
-                return jsonify({'error': 'User not authenticated'}), 401
+        # Generate temporary user ID for guest checkout
+        replit_user_id = request.headers.get('X-Replit-User-Id', str(uuid.uuid4()))
 
         package = request.form.get('package')
         if not package:
