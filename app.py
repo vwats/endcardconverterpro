@@ -390,21 +390,24 @@ def create_app():
                 logger.error("Stripe API key is not set")
                 return jsonify({'error': 'Stripe configuration error'}), 500
 
-            # Define package prices directly from environment variables
-            packages = {
-                'starter': {'price': os.environ.get('STRIPE_PRICE_ID_STARTER'), 'credits': 10},
-                'standard': {'price': os.environ.get('STRIPE_PRICE_ID_STANDARD'), 'credits': 30},
-                'pro': {'price': os.environ.get('STRIPE_PRICE_ID_PRO'), 'credits': 60}
+            # Define package prices with fallback values
+            price_ids = {
+                'starter': 'price_1RDmM2CWLRgle41p4xsT3eTP',
+                'standard': 'price_1RDmMsCWLRgle41pMHUNgGxP',
+                'pro': 'price_1RDmNMCWLRgle41pKt8B1WwH'
             }
 
-            if package not in packages:
+            if package not in price_ids:
                 logger.error(f"Invalid package selected: {package}")
                 return jsonify({'error': 'Invalid package selected'}), 400
 
-            price_id = packages[package]['price']
-            if not isinstance(price_id, str) or not price_id.startswith('price_'):
-                logger.error(f"Invalid Stripe price ID format for {package}: {price_id}")
-                return jsonify({'error': 'Invalid Stripe price ID format'}), 500
+            credits = {
+                'starter': 10,
+                'standard': 30,
+                'pro': 60
+            }
+
+            price_id = os.environ.get(f'STRIPE_PRICE_ID_{package.upper()}', price_ids[package])
 
             # Debug log current package selection and configuration
             logger.debug(f"Selected package: {package}")
