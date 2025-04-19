@@ -32,6 +32,12 @@ def create_app():
         app.config['SERVER_NAME'] = 'endcardconverter.com'
         app.config['PREFERRED_URL_SCHEME'] = 'https'
 
+    @app.after_request
+    def add_security_headers(response):
+        response.headers['Content-Security-Policy'] = "frame-ancestors 'self' https://checkout.stripe.com"
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        return response
+
     # Configure file upload settings
     UPLOAD_FOLDER = '/tmp/uploads'
     ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'mp4'}
