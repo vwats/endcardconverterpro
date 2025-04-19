@@ -382,23 +382,29 @@ def create_app():
             logger.info(f"Creating checkout session for package: {package}")
             logger.info(f"Using price ID: {price_id}")
 
-            checkout_session = stripe.checkout.Session.create(
-                payment_method_types=['card'],
-                line_items=[{
-                    'price': price_id,
-                    'quantity': 1,
-                    'adjustable_quantity': {
-                        'enabled': False
+            if not price_id.startswith('price_'):
+                logger.error(f"Invalid price ID format: {price_id}")
+                return jsonify({'error': 'Invalid price ID format. Must start with "price_"'}), 400
+
+            try:
+                checkout_session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=[{
+                        'price': price_id,
+                        'quantity': 1,
+                        'adjustable_quantity': {
+                            'enabled': False
+                        }
+                    }],
+                    mode='payment',
+                    success_url=request.host_url + 'payment/success?session_id={CHECKOUT_SESSION_ID}',
+                    cancel_url=request.host_url + 'payment/cancel',
+                    metadata={
+                        'replit_user_id': replit_user_id,
+                        'credits': packages[package]['credits']
                     }
-                }],
-                mode='payment',
-                success_url=request.host_url + 'payment/success?session_id={CHECKOUT_SESSION_ID}',
-                cancel_url=request.host_url + 'payment/cancel',
-                metadata={
-                    'replit_user_id': replit_user_id,
-                    'credits': packages[package]['credits']
-                }
-            )
+                )
+                logger.info(f"Created checkout session {checkout_session.id} for user {replit_user_id}")
             return jsonify({'id': checkout_session.id})
         except stripe.error.StripeError as e:
             logger.error(f"Stripe error: {str(e)}")
