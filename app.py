@@ -12,9 +12,18 @@ import stripe
 from models import db, User, Endcard
 from utils.endcard_converter import convert_to_endcard
 
-# Configure logging first
-logging.basicConfig(level=logging.DEBUG)
+# Configure detailed logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)s] %(message)s [in %(pathname)s:%(lineno)d]'
+)
 logger = logging.getLogger(__name__)
+
+# Log important environment variables and configuration
+if os.environ.get('PRODUCTION'):
+    logger.info("Running in PRODUCTION mode")
+    logger.info(f"SERVER_NAME: {os.environ.get('SERVER_NAME')}")
+    logger.info(f"Stripe configuration present: {bool(os.environ.get('STRIPE_SECRET_KEY'))}")
 
 # Initialize Stripe with error handling
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
