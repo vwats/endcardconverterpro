@@ -132,8 +132,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.endcard_id) {
                     endcardIdField.value = data.endcard_id;
                     currentEndcardId = data.endcard_id;
-                    handleUploadSuccess(data);
                 }
+                handleUploadSuccess(data);
             })
             .catch(error => {
                 console.error('Upload failed:', error);
