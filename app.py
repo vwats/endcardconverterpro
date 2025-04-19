@@ -411,11 +411,13 @@ def create_app():
                     cancel_url=request.host_url + 'payment/cancel',
                     metadata={
                         'replit_user_id': replit_user_id,
-                        'credits': packages[package]['credits']
+                        'credits': str(packages[package]['credits'])
                     }
                 )
                 logger.info(f"Created checkout session {checkout_session.id} for user {replit_user_id}")
-                return jsonify({'id': checkout_session.id})
+                response = jsonify({'id': checkout_session.id})
+                response.headers['Content-Type'] = 'application/json'
+                return response
             except stripe.error.StripeError as e:
                 logger.error(f"Stripe error: {str(e)}")
                 return jsonify({'error': str(e)}), 403
