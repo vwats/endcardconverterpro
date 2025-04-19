@@ -49,6 +49,9 @@ def create_app():
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
         response.headers['X-XSS-Protection'] = '1; mode=block'
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        if os.environ.get('PRODUCTION'):
+            response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: *.stripe.com *.stripe.network"
+            response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         return response
 
     # Configure file upload settings
