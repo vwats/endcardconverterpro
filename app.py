@@ -131,9 +131,11 @@ def create_app():
         else:
             # Check if user is logged in and has credits
             replit_user_id = request.headers.get('X-Replit-User-Id')
+            logger.info("Auth attempt - Headers received: %s", dict(request.headers))
+            
             if not replit_user_id:
-                logger.error("Authentication failed - Headers: %s", dict(request.headers))
-                return jsonify({'error': 'User not authenticated'}), 401
+                logger.error("Authentication failed - No X-Replit-User-Id header")
+                return jsonify({'error': 'User not authenticated. Please ensure you are logged into Replit.'}), 401
 
             user = User.query.filter_by(replit_id=replit_user_id).first()
             if not user:
