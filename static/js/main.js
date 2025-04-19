@@ -116,25 +116,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'Accept': 'application/json'
-                }
+                    'Accept': 'application/json',
+                    'Origin': window.location.origin
+                },
+                credentials: 'include'
             })
             .then(response => {
                 if (!response.ok) {
-                    return response.json().then(err => Promise.reject(err));
+                    return response.json().then(err => {
+                        throw new Error(err.error || `HTTP error! status: ${response.status}`);
+                    });
                 }
                 return response.json();
             })
             .then(data => {
-                if (data.id) {
-                    stripe.redirectToCheckout({ sessionId: data.id });
-                } else {
-                    throw new Error('Missing Stripe session ID');
+                if (!data || !data.id) {
+                    throw new Error('Invalid response from server - missing session ID');
                 }
+                return stripe.redirectToCheckout({ sessionId: data.id }).catch(err => {
+                    throw new Error(`Stripe checkout error: ${err.message}`);
+                });
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert(error.message || 'An error occurred');
+                console.error('Payment setup failed:', error);
+                alert(`Payment setup failed: ${error.message}`);
+                enableElement(combinedUploadBtn);
             });
         });
     }

@@ -3,7 +3,7 @@ import logging
 import uuid
 import base64
 import io
-from flask import Flask, request, render_template, send_file, jsonify, flash, redirect, url_for, Response
+from flask import Flask, request, render_template, send_file, jsonify, flash, redirect, url_for, Response, make_response
 from werkzeug.utils import secure_filename
 from functools import wraps
 import io
@@ -327,6 +327,16 @@ def create_app():
 
     @app.route('/create-checkout-session', methods=['POST'])
     def create_checkout_session():
+        # Set CORS headers for production domains
+        if request.headers.get('Origin'):
+            response = make_response()
+            response.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin')
+            response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+
+        if request.method == 'OPTIONS':
+            return response
+
         if not os.environ.get('PRODUCTION'):
             replit_user_id = 'dev_user'
         else:
@@ -337,6 +347,9 @@ def create_app():
         package = request.form.get('package')
         if not package:
             return jsonify({'error': 'No package specified'}), 400
+            
+        if package not in ['starter', 'standard', 'pro']:
+            return jsonify({'error': 'Invalid package selected'}), 400
 
         try:
             # Debug: Print environment variables
