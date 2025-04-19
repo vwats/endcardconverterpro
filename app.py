@@ -14,10 +14,15 @@ from utils.endcard_converter import convert_to_endcard
 
 # Configure detailed logging
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.DEBUG if os.environ.get('FLASK_DEBUG') else logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s [in %(pathname)s:%(lineno)d]'
 )
 logger = logging.getLogger(__name__)
+
+# Set deployment domain if in production
+if os.environ.get('PRODUCTION'):
+    server_name = os.environ.get('SERVER_NAME', 'endcardconverter.com')
+    logger.info(f"Running in production mode with SERVER_NAME: {server_name}")
 
 # Log important environment variables and configuration
 if os.environ.get('PRODUCTION'):
@@ -431,7 +436,7 @@ def create_app():
                 base_url = os.environ.get('SERVER_NAME', request.host_url.rstrip('/'))
                 if not base_url.startswith(('http://', 'https://')):
                     base_url = f"https://{base_url}"
-                    
+
                 checkout_session = stripe.checkout.Session.create(
                     payment_method_types=['card'],
                     line_items=[{

@@ -8,11 +8,11 @@ REPLIT_DISABLE_PACKAGE_LAYER = "1"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 --log-level info main:app"]
+run = ["sh", "-c", "gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 120 --log-level debug --error-logfile - --capture-output main:app"]
 build = ["sh", "-c", "pip install -r requirements.txt"]
 
 [workflows]
-runButton = "Production Server Debug"
+runButton = "Production"
 
 [[workflows.workflow]]
 name = "Project"
@@ -83,6 +83,27 @@ args = "gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 main:app"
 
 [[workflows.workflow]]
 name = "Production Server Debug"
+author = 40702119
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "export PRODUCTION=true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "export FLASK_DEBUG=true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill gunicorn || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 120 --log-level debug --error-logfile - --capture-output --reload main:app"
+
+[[workflows.workflow]]
+name = "Production"
 author = 40702119
 mode = "sequential"
 
