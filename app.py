@@ -405,7 +405,10 @@ def create_app():
                     }
                 )
                 logger.info(f"Created checkout session {checkout_session.id} for user {replit_user_id}")
-            return jsonify({'id': checkout_session.id})
+                return jsonify({'id': checkout_session.id})
+            except stripe.error.StripeError as e:
+                logger.error(f"Stripe error: {str(e)}")
+                return jsonify({'error': str(e)}), 403
         except stripe.error.StripeError as e:
             logger.error(f"Stripe error: {str(e)}")
             return jsonify({'error': str(e)}), 403
