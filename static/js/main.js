@@ -125,13 +125,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
-                if (!data || !data.id) {
-                    throw new Error('Invalid response from server - missing session ID');
+                if (data.error) {
+                    throw new Error(data.error);
                 }
-                return stripe.redirectToCheckout({ sessionId: data.id }).catch(err => {
-                    throw new Error(`Stripe checkout error: ${err.message}`);
-                });
-            })
+                currentData = data;
+                if (data.endcard_id) {
+                    endcardIdField.value = data.endcard_id;
+                    currentEndcardId = data.endcard_id;
+                }
             .catch(error => {
                 console.error('Payment setup failed:', error);
                 alert(`Payment setup failed: ${error.message}`);
