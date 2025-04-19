@@ -132,11 +132,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.endcard_id) {
                     endcardIdField.value = data.endcard_id;
                     currentEndcardId = data.endcard_id;
-                }
-                handleUploadSuccess(data);
+                    handleUploadSuccess(data);
+                })
             .catch(error => {
-                console.error('Payment setup failed:', error);
-                alert(`Payment setup failed: ${error.message}`);
+                console.error('Upload failed:', error);
+                alert(`Upload failed: ${error.message}`);
                 enableElement(combinedUploadBtn);
             });
         });
