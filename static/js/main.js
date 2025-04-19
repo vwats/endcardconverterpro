@@ -112,14 +112,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 formData.append('endcard_id', endcardIdField.value);
             }
 
-            fetch('/create-checkout-session', {
+            fetch('/upload/combined', {
                 method: 'POST',
-                body: formData,
-                headers: {
-                    'Accept': 'application/json',
-                    'Origin': window.location.origin
-                },
-                credentials: 'include'
+                body: formData
             })
             .then(response => {
                 if (!response.ok) {

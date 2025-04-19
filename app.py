@@ -325,16 +325,13 @@ def create_app():
         response.headers.add("Content-Security-Policy", "default-src 'self'")
         return response
 
-    @app.route('/create-checkout-session', methods=['POST'])
+    @app.route('/create-checkout-session', methods=['POST', 'OPTIONS'])
     def create_checkout_session():
-        # Set CORS headers for production domains
-        if request.headers.get('Origin'):
-            response = make_response()
-            response.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin')
-            response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
-            response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-
         if request.method == 'OPTIONS':
+            response = make_response()
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            response.headers['Access-Control-Allow-Methods'] = 'POST'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
             return response
 
         if not os.environ.get('PRODUCTION'):
