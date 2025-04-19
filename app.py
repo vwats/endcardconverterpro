@@ -36,7 +36,7 @@ def create_app():
     app = Flask(__name__)
     app.secret_key = os.environ.get("SESSION_SECRET", "dev_secret_key")
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
-    
+
     # Security headers
     @app.after_request
     def add_security_headers(response):
@@ -132,7 +132,7 @@ def create_app():
             # Check if user is logged in and has credits
             replit_user_id = request.headers.get('X-Replit-User-Id')
             logger.info("Auth attempt - Headers received: %s", dict(request.headers))
-            
+
             if not replit_user_id:
                 logger.error("Authentication failed - No X-Replit-User-Id header")
                 return jsonify({'error': 'User not authenticated. Please ensure you are logged into Replit.'}), 401
@@ -381,11 +381,26 @@ def create_app():
             logger.debug(f"STRIPE_PRICE_ID_STANDARD: {os.environ.get('STRIPE_PRICE_ID_STANDARD')}")
             logger.debug(f"STRIPE_PRICE_ID_PRO: {os.environ.get('STRIPE_PRICE_ID_PRO')}")
 
+            stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+            if not stripe.api_key:
+                logger.error("Stripe API key is not set")
+                return jsonify({'error': 'Stripe configuration error'}), 500
+
+            # Define package prices directly from environment variables
             packages = {
                 'starter': {'price': os.environ.get('STRIPE_PRICE_ID_STARTER'), 'credits': 10},
                 'standard': {'price': os.environ.get('STRIPE_PRICE_ID_STANDARD'), 'credits': 30},
                 'pro': {'price': os.environ.get('STRIPE_PRICE_ID_PRO'), 'credits': 60}
             }
+
+            if package not in packages:
+                logger.error(f"Invalid package selected: {package}")
+                return jsonify({'error': 'Invalid package selected'}), 400
+
+            price_id = packages[package]['price']
+            if not isinstance(price_id, str) or not price_id.startswith('price_'):
+                logger.error(f"Invalid Stripe price ID format for {package}: {price_id}")
+                return jsonify({'error': 'Invalid Stripe price ID format'}), 500
 
             # Debug log current package selection and configuration
             logger.debug(f"Selected package: {package}")
@@ -409,12 +424,6 @@ def create_app():
                 logger.error(f"Invalid Stripe price ID format for {package}: {price_id}")
                 return jsonify({'error': 'Invalid Stripe price ID format'}), 500
 
-            stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
-            if not stripe.api_key:
-                logger.error("Stripe API key is not set")
-                return jsonify({'error': 'Stripe configuration error'}), 500
-
-            price_id = packages[package]['price']
             logger.info(f"Creating checkout session for package: {package}")
             logger.info(f"Using price ID: {price_id}")
 
