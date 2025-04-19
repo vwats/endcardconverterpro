@@ -34,7 +34,7 @@ def create_app():
 
     @app.after_request
     def add_security_headers(response):
-        response.headers['Content-Security-Policy'] = "frame-ancestors 'self' https://checkout.stripe.com"
+        response.headers['Content-Security-Policy'] = "frame-ancestors 'self' https://checkout.stripe.com; form-action 'self' https://checkout.stripe.com"
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
         return response
 
