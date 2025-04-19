@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # Initialize Stripe with error handling
-stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', os.environ.get('sk_live_51RDm1PCWLRqle41p0onLy'))
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 if not stripe.api_key:
     logger.error("Stripe API key is not configured")
 else:
