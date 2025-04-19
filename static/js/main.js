@@ -112,13 +112,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 formData.append('endcard_id', endcardIdField.value);
             }
 
-            fetch('/upload/combined', {
+            fetch('/create-checkout-session', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
             })
-            .then(response => response.json())
-            .then(handleUploadSuccess)
-            .catch(handleUploadError);
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(err));
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.id) {
+                    stripe.redirectToCheckout({ sessionId: data.id });
+                } else {
+                    throw new Error('Missing Stripe session ID');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error.message || 'An error occurred');
+            });
         });
     }
 
