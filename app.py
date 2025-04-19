@@ -27,16 +27,6 @@ def create_app():
     app = Flask(__name__)
     app.secret_key = os.environ.get("SESSION_SECRET", "dev_secret_key")
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
-    
-    if os.environ.get('PRODUCTION'):
-        app.config['SERVER_NAME'] = 'endcardconverter.com'
-        app.config['PREFERRED_URL_SCHEME'] = 'https'
-
-    @app.after_request
-    def add_security_headers(response):
-        response.headers['Content-Security-Policy'] = "frame-ancestors 'self' https://checkout.stripe.com; form-action 'self' https://checkout.stripe.com"
-        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-        return response
 
     # Configure file upload settings
     UPLOAD_FOLDER = '/tmp/uploads'
@@ -411,13 +401,11 @@ def create_app():
                     cancel_url=request.host_url + 'payment/cancel',
                     metadata={
                         'replit_user_id': replit_user_id,
-                        'credits': str(packages[package]['credits'])
+                        'credits': packages[package]['credits']
                     }
                 )
                 logger.info(f"Created checkout session {checkout_session.id} for user {replit_user_id}")
-                response = jsonify({'id': checkout_session.id})
-                response.headers['Content-Type'] = 'application/json'
-                return response
+                return jsonify({'id': checkout_session.id})
             except stripe.error.StripeError as e:
                 logger.error(f"Stripe error: {str(e)}")
                 return jsonify({'error': str(e)}), 403
