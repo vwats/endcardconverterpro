@@ -428,6 +428,10 @@ def create_app():
                 return jsonify({'error': 'Invalid price ID format. Must start with "price_"'}), 400
 
             try:
+                base_url = os.environ.get('SERVER_NAME', request.host_url.rstrip('/'))
+                if not base_url.startswith(('http://', 'https://')):
+                    base_url = f"https://{base_url}"
+                    
                 checkout_session = stripe.checkout.Session.create(
                     payment_method_types=['card'],
                     line_items=[{
@@ -438,8 +442,8 @@ def create_app():
                         }
                     }],
                     mode='payment',
-                    success_url=request.host_url + 'payment/success?session_id={CHECKOUT_SESSION_ID}',
-                    cancel_url=request.host_url + 'payment/cancel',
+                    success_url=f"{base_url}/payment/success?session_id={{CHECKOUT_SESSION_ID}}",
+                    cancel_url=f"{base_url}/payment/cancel",
                     metadata={
                         'replit_user_id': replit_user_id,
                         'credits': packages[package]['credits']
