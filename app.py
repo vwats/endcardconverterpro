@@ -443,9 +443,11 @@ def create_app():
                 return jsonify({'error': 'Invalid price ID format. Must start with "price_"'}), 400
 
             try:
-                base_url = request.host_url.rstrip('/')
-                if not base_url.startswith(('http://', 'https://')):
-                    base_url = f"https://{base_url}"
+                # Get domain from request or environment
+                if os.environ.get('PRODUCTION'):
+                    base_url = 'https://' + request.headers.get('Host', request.host)
+                else:
+                    base_url = request.host_url.rstrip('/')
 
                 # Validate price ID exists and is active
                 try:
@@ -471,8 +473,12 @@ def create_app():
                     cancel_url=f"{base_url}/payment/cancel",
                     metadata={
                         'replit_user_id': replit_user_id,
-                        'credits': packages[package]['credits']
-                    }
+                        'credits': packages[package]['credits'],
+                        'package': package,
+                        'environment': 'production' if os.environ.get('PRODUCTION') else 'preview'
+                    },
+                    allow_promotion_codes=True,
+                    client_reference_id=replit_user_id
                 )
                 logger.info(f"Created checkout session {checkout_session.id} for user {replit_user_id}")
                 return jsonify({'id': checkout_session.id})
