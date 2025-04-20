@@ -12,7 +12,7 @@ run = ["sh", "-c", "PRODUCTION=true FLASK_DEBUG=false gunicorn --bind 0.0.0.0:50
 build = ["sh", "-c", "pip install -r requirements.txt"]
 
 [workflows]
-runButton = "Production Debug"
+runButton = "Debug Server"
 
 [[workflows.workflow]]
 name = "Project"
@@ -131,6 +131,23 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "export PRODUCTION=true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "export FLASK_DEBUG=true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill gunicorn || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 120 --log-level debug --error-logfile - --capture-output --reload main:app"
+
+[[workflows.workflow]]
+name = "Debug Server"
+author = 40702119
+mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
