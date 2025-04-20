@@ -47,6 +47,7 @@ body {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    margin-bottom: 2rem;
 }
 
 .card::before {
@@ -80,7 +81,21 @@ body {
 }
 
 .card-body {
-    padding: 1.75rem;
+    padding: 2rem;
+}
+
+/* Improve spacing between sections */
+.section-spacing {
+    margin-bottom: 3rem;
+}
+
+.container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.card + .card {
+    margin-top: 2rem;
 }
 
 /* Preview containers with subtle glow */
