@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!endcardPreview || !currentData) return;
 
         const doc = endcardPreview.contentDocument || endcardPreview.contentWindow.document;
-        const htmlContent = currentOrientation === 'portrait' ? currentData.portrait : currentData.landscape;
+        const htmlContent = currentData.html || currentData.portrait;  // Use new format first, fall back to old
 
         // Save current scroll position
         const scrollPos = doc.documentElement ? doc.documentElement.scrollTop : 0;
