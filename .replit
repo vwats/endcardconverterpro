@@ -8,7 +8,7 @@ REPLIT_DISABLE_PACKAGE_LAYER = "1"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level info --error-logfile - --capture-output main:app"]
+run = ["sh", "-c", "export FLASK_DEBUG=true PRODUCTION=true STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY} STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY} gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level debug --error-logfile - --capture-output --reload main:app"]
 build = ["sh", "-c", "pip install -r requirements.txt"]
 
 [workflows]
@@ -109,15 +109,19 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
+args = "export FLASK_DEBUG=true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
 args = "export PRODUCTION=true"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "export FLASK_DEBUG=false"
+args = "export STRIPE_SECRET_KEY=\"${STRIPE_SECRET_KEY}\""
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "export SERVER_NAME=endcardconverter.com"
+args = "export STRIPE_PUBLISHABLE_KEY=\"${STRIPE_PUBLISHABLE_KEY}\""
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -125,7 +129,7 @@ args = "pkill gunicorn || true"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level info --error-logfile - --capture-output main:app"
+args = "gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level debug --error-logfile - --capture-output --reload main:app"
 
 [[ports]]
 localPort = 5000
