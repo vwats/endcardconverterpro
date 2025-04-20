@@ -8,7 +8,7 @@ REPLIT_DISABLE_PACKAGE_LAYER = "1"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "export FLASK_DEBUG=true PRODUCTION=true STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY} STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY} gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level debug --error-logfile - --capture-output --reload main:app"]
+run = ["sh", "-c", "sh -c 'source .env.sh && gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level debug --error-logfile - --capture-output --reload main:app'"]
 build = ["sh", "-c", "pip install -r requirements.txt"]
 
 [workflows]
@@ -109,19 +109,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "export FLASK_DEBUG=true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "export PRODUCTION=true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "export STRIPE_SECRET_KEY=\"${STRIPE_SECRET_KEY}\""
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "export STRIPE_PUBLISHABLE_KEY=\"${STRIPE_PUBLISHABLE_KEY}\""
+args = "source .env.sh"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
