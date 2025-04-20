@@ -399,18 +399,28 @@ def create_app():
             # Define package prices and credits
             packages = {
                 'starter': {
-                    'price_id': 'price_1RFzRICWLRgle41pJaLGf7Ld',
+                    'price_id': os.environ.get('STRIPE_PRICE_ID_STARTER'),
                     'credits': 10
                 },
                 'standard': {
-                    'price_id': 'price_1RFzRwCWLRgle41pXkoV3HaL',
+                    'price_id': os.environ.get('STRIPE_PRICE_ID_STANDARD'),
                     'credits': 30
                 },
                 'pro': {
-                    'price_id': 'price_1RFzSRCWLRgle41pbfyWtO0j',
+                    'price_id': os.environ.get('STRIPE_PRICE_ID_PRO'),
                     'credits': 60
                 }
             }
+
+            # Validate package exists and has valid price_id
+            if package not in packages:
+                logger.error(f"Invalid package selected: {package}")
+                return jsonify({'error': 'Invalid package selected'}), 400
+            
+            price_id = packages[package]['price_id']
+            if not price_id:
+                logger.error(f"Missing price ID for package: {package}")
+                return jsonify({'error': 'Invalid price configuration'}), 400
 
             if package not in packages:
                 logger.error(f"Invalid package selected: {package}")
