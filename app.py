@@ -412,27 +412,17 @@ def create_app():
                 }
             }
 
-            # Validate package exists and has valid price_id
+            # Validate package and price ID
             if package not in packages:
                 logger.error(f"Invalid package selected: {package}")
                 return jsonify({'error': 'Invalid package selected'}), 400
-            
+
             price_id = packages[package]['price_id']
             if not price_id:
                 logger.error(f"Missing price ID for package: {package}")
                 return jsonify({'error': 'Invalid price configuration'}), 400
 
-            if package not in packages:
-                logger.error(f"Invalid package selected: {package}")
-                return jsonify({'error': 'Invalid package selected'}), 400
-
-            # Get price ID with enhanced logging
-            price_id = os.environ.get(f'STRIPE_PRICE_ID_{package.upper()}')
-            if not price_id:
-                price_id = packages[package]['price_id']
-                logger.info(f"Using default price_id for {package}: {price_id}")
-            else:
-                logger.info(f"Using environment price_id for {package}: {price_id}")
+            logger.info(f"Using price_id for {package}: {price_id}")
 
             if not isinstance(price_id, str) or not price_id.startswith('price_'):
                 logger.error(f"Invalid Stripe price ID format: {price_id}")
