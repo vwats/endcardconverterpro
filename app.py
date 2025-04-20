@@ -390,24 +390,28 @@ def create_app():
                 logger.error("Stripe API key is not set")
                 return jsonify({'error': 'Stripe configuration error'}), 500
 
-            # Define package prices with fallback values
-            price_ids = {
-                'starter': 'price_1RDmM2CWLRgle41p4xsT3eTP',
-                'standard': 'price_1RDmMsCWLRgle41pMHUNgGxP',
-                'pro': 'price_1RDmNMCWLRgle41pKt8B1WwH'
+            # Define package prices and credits
+            packages = {
+                'starter': {
+                    'price_id': 'price_1RFzRICWLRgle41pJaLGf7Ld',
+                    'credits': 10
+                },
+                'standard': {
+                    'price_id': 'price_1RFzRwCWLRgle41pXkoV3HaL',
+                    'credits': 30
+                },
+                'pro': {
+                    'price_id': 'price_1RFzSRCWLRgle41pbfyWtO0j',
+                    'credits': 60
+                }
             }
 
-            if package not in price_ids:
+            if package not in packages:
                 logger.error(f"Invalid package selected: {package}")
                 return jsonify({'error': 'Invalid package selected'}), 400
 
-            credits = {
-                'starter': 10,
-                'standard': 30,
-                'pro': 60
-            }
-
-            price_id = os.environ.get(f'STRIPE_PRICE_ID_{package.upper()}', price_ids[package])
+            # Use environment variable if set, otherwise use default price_id
+            price_id = os.environ.get(f'STRIPE_PRICE_ID_{package.upper()}', packages[package]['price_id'])
 
             # Debug log current package selection and configuration
             logger.debug(f"Selected package: {package}")
