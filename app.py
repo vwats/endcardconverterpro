@@ -410,17 +410,27 @@ def create_app():
                 logger.error(f"Invalid package selected: {package}")
                 return jsonify({'error': 'Invalid package selected'}), 400
 
-            # Get price ID from environment or use default
-            price_id = os.environ.get(f'STRIPE_PRICE_ID_{package.upper()}', packages[package]['price_id'])
+            # Get price ID with enhanced logging
+            price_id = os.environ.get(f'STRIPE_PRICE_ID_{package.upper()}')
+            if not price_id:
+                price_id = packages[package]['price_id']
+                logger.info(f"Using default price_id for {package}: {price_id}")
+            else:
+                logger.info(f"Using environment price_id for {package}: {price_id}")
 
-            if not price_id or not isinstance(price_id, str) or not price_id.startswith('price_'):
-                logger.error(f"Invalid Stripe price ID format for {package}: {price_id}")
+            if not isinstance(price_id, str) or not price_id.startswith('price_'):
+                logger.error(f"Invalid Stripe price ID format: {price_id}")
                 return jsonify({'error': 'Invalid price configuration'}), 500
 
-            logger.info(f"Creating checkout for package {package} with price_id {price_id}")
+            try:
+                # Validate price ID exists in Stripe
+                stripe.Price.retrieve(price_id)
+                logger.info(f"Validated Stripe price_id {price_id}")
+            except stripe.error.StripeError as e:
+                logger.error(f"Stripe price validation failed: {str(e)}")
+                return jsonify({'error': 'Invalid price configuration'}), 500
 
-            logger.info(f"Creating checkout session for package: {package}")
-            logger.info(f"Using price ID: {price_id}")
+            logger.info(f"Creating checkout session for {package} with price_id {price_id}")
 
             if not price_id.startswith('price_'):
                 logger.error(f"Invalid price ID format: {price_id}")
