@@ -8,7 +8,7 @@ REPLIT_DISABLE_PACKAGE_LAYER = "1"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "export PRODUCTION=true FLASK_DEBUG=false SERVER_NAME=endcardconverter.com gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level info --error-logfile - --capture-output main:app"]
+run = ["sh", "-c", "gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level info --error-logfile - --capture-output main:app"]
 build = ["sh", "-c", "pip install -r requirements.txt"]
 
 [workflows]
