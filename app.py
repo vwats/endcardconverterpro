@@ -393,15 +393,15 @@ def create_app():
             # Define package prices and credits
             packages = {
                 'starter': {
-                    'price_id': 'price_1RFzRICWLRgle41pJaLGf7Ld',
+                    'price_id': os.environ.get('STRIPE_PRICE_ID_STARTER', 'price_1RDwmW2CWLRgle41p4sT3eTP'),
                     'credits': 10
                 },
                 'standard': {
-                    'price_id': 'price_1RFzRwCWLRgle41pXkoV3HaL',
+                    'price_id': os.environ.get('STRIPE_PRICE_ID_STANDARD', 'price_1RDwmW2CWLRgle41pXkoV3HaL'),
                     'credits': 30
                 },
                 'pro': {
-                    'price_id': 'price_1RFzSRCWLRgle41pbfyWtO0j',
+                    'price_id': os.environ.get('STRIPE_PRICE_ID_PRO', 'price_1RDwmW2CWLRgle41pbfyWtO0j'),
                     'credits': 60
                 }
             }
