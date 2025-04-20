@@ -13,17 +13,17 @@ from models import db, User, Endcard
 from utils.endcard_converter import convert_to_endcard
 
 # Configure detailed logging
-    logging.basicConfig(
-        level=logging.DEBUG if os.environ.get('FLASK_DEBUG') else logging.INFO,
-        format='%(asctime)s [%(levelname)s] %(message)s [in %(pathname)s:%(lineno)d]',
-        handlers=[logging.StreamHandler()]
-    )
-    logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.DEBUG if os.environ.get('FLASK_DEBUG') else logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s [in %(pathname)s:%(lineno)d]',
+    handlers=[logging.StreamHandler()]
+)
+logger = logging.getLogger(__name__)
 
-    # Ensure all errors are captured in production
-    if os.environ.get('PRODUCTION'):
-        logger.setLevel(logging.INFO)
-        logging.getLogger('werkzeug').setLevel(logging.INFO)
+# Ensure all errors are captured in production
+if os.environ.get('PRODUCTION'):
+    logger.setLevel(logging.INFO)
+    logging.getLogger('werkzeug').setLevel(logging.INFO)
 
 # Set deployment domain if in production
 if os.environ.get('PRODUCTION'):
