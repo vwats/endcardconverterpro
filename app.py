@@ -478,7 +478,7 @@ def create_app():
                         'environment': 'production' if os.environ.get('PRODUCTION') else 'preview'
                     },
                     allow_promotion_codes=True,
-                    client_reference_id=replit_user_id
+                    client_reference_id=str(replit_user_id) if replit_user_id else 'guest'
                 )
                 logger.info(f"Created checkout session {checkout_session.id} for user {replit_user_id}")
                 return jsonify({'id': checkout_session.id})
