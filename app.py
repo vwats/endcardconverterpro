@@ -437,9 +437,19 @@ def create_app():
                 return jsonify({'error': 'Invalid price ID format. Must start with "price_"'}), 400
 
             try:
-                base_url = os.environ.get('SERVER_NAME', request.host_url.rstrip('/'))
+                base_url = request.host_url.rstrip('/')
                 if not base_url.startswith(('http://', 'https://')):
                     base_url = f"https://{base_url}"
+
+                # Validate price ID exists and is active
+                try:
+                    price = stripe.Price.retrieve(price_id)
+                    if not price.active:
+                        logger.error(f"Price {price_id} exists but is inactive")
+                        return jsonify({'error': 'Selected package is currently unavailable'}), 400
+                except stripe.error.InvalidRequestError:
+                    logger.error(f"Invalid price ID: {price_id}")
+                    return jsonify({'error': 'Invalid package configuration'}), 400
 
                 checkout_session = stripe.checkout.Session.create(
                     payment_method_types=['card'],
