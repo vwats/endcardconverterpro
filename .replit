@@ -12,7 +12,7 @@ run = ["sh", "-c", "sh -c 'source .env.sh && gunicorn --bind 0.0.0.0:5000 --work
 build = ["sh", "-c", "pip install -r requirements.txt"]
 
 [workflows]
-runButton = "Production"
+runButton = "Production Server Debug"
 
 [[workflows.workflow]]
 name = "Project"
