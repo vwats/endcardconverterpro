@@ -5,14 +5,11 @@ channel = "stable-24_05"
 
 [env]
 PRODUCTION = "true"
-FLASK_DEBUG = "true"
+FLASK_DEBUG = "false"
 
 [deployment]
-run = "python3 main.py"
+run = "gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level debug --error-logfile - --capture-output main:app"
 build = ["pip", "install", "-r", "requirements.txt"]
-
-[server]
-runCommand = "gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level debug main:app"
 
 [languages.python]
 pattern = "**/*.py"
@@ -23,8 +20,6 @@ start = ["pylsp"]
 
 [unitTest]
 language = "python"
-
-args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
 
 [[workflows.workflow]]
 name = "Restart Server"
