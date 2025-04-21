@@ -8,40 +8,22 @@ REPLIT_DISABLE_PACKAGE_LAYER = "1"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "sh -c 'source .env.sh && gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level debug --error-logfile - --capture-output --reload main:app'"]
+run = ["sh", "-c", "source .env.sh && gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level debug --error-logfile - --capture-output --reload main:app"]
 build = ["sh", "-c", "pip install -r requirements.txt"]
 
 [workflows]
-runButton = "Production Server Debug"
+runButton = "Start Application"
 
 [[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Start application"
-
-[[workflows.workflow]]
-name = "Start application"
+name = "Start Application"
+mode = "sequential"
 author = "agent"
 
 [workflows.workflow.metadata]
-agentRequireRestartOnSave = false
+agentRequireRestartOnSave = true
 
 [[workflows.workflow.tasks]]
 task = "packager.installForAll"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
-waitForPort = 5000
-
-[[workflows.workflow]]
-name = "Restart Application"
-author = 40702119
-mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -49,6 +31,8 @@ args = "pkill gunicorn || true"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
+args = "source .env.sh && gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level debug --error-logfile - --capture-output --reload main:app"
+waitForPort = 5000
 args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
 
 [[workflows.workflow]]
