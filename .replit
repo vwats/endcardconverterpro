@@ -4,35 +4,26 @@ modules = ["python-3.11"]
 channel = "stable-24_05"
 
 [env]
-REPLIT_DISABLE_PACKAGE_LAYER = "1"
+PRODUCTION = "true"
+FLASK_DEBUG = "true"
 
 [deployment]
-deploymentTarget = "autoscale"
-run = ["sh", "-c", "source .env.sh && gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level debug --error-logfile - --capture-output --reload main:app"]
-build = ["sh", "-c", "pip install -r requirements.txt"]
+run = "python3 main.py"
+build = ["pip", "install", "-r", "requirements.txt"]
 
-[workflows]
-runButton = "Start Application"
+[server]
+runCommand = "gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level debug main:app"
 
-[[workflows.workflow]]
-name = "Start Application"
-mode = "sequential"
-author = "agent"
+[languages.python]
+pattern = "**/*.py"
+syntax = "python"
 
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = true
+[languages.python.languageServer]
+start = ["pylsp"]
 
-[[workflows.workflow.tasks]]
-task = "packager.installForAll"
+[unitTest]
+language = "python"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pkill gunicorn || true"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "source .env.sh && gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level debug --error-logfile - --capture-output --reload main:app"
-waitForPort = 5000
 args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
 
 [[workflows.workflow]]

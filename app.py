@@ -25,16 +25,18 @@ if os.environ.get('PRODUCTION'):
     logger.setLevel(logging.INFO)
     logging.getLogger('werkzeug').setLevel(logging.INFO)
 
-# Set deployment domain if in production
-if os.environ.get('PRODUCTION'):
-    server_name = os.environ.get('SERVER_NAME', 'endcardconverter.com')
-    logger.info(f"Running in production mode with SERVER_NAME: {server_name}")
+# Configure server name and environment
+is_production = bool(os.environ.get('PRODUCTION'))
+server_name = os.environ.get('SERVER_NAME')
+
+if is_production and not server_name:
+    logger.warning("PRODUCTION is set but SERVER_NAME is missing")
+    server_name = request.host if request else None
 
 # Log important environment variables and configuration
-if os.environ.get('PRODUCTION'):
-    logger.info("Running in PRODUCTION mode")
-    logger.info(f"SERVER_NAME: {os.environ.get('SERVER_NAME')}")
-    logger.info(f"Stripe configuration present: {bool(os.environ.get('STRIPE_SECRET_KEY'))}")
+logger.info(f"Environment: {'PRODUCTION' if is_production else 'PREVIEW'}")
+logger.info(f"SERVER_NAME: {server_name}")
+logger.info(f"Stripe configuration present: {bool(os.environ.get('STRIPE_SECRET_KEY'))}")
 
 # Initialize Stripe with error handling
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
@@ -445,9 +447,11 @@ def create_app():
             try:
                 # Get domain from request or environment
                 if os.environ.get('PRODUCTION'):
-                    base_url = 'https://' + request.headers.get('Host', request.host)
+                    base_url = 'https://' + (os.environ.get('SERVER_NAME') or request.headers.get('Host', request.host))
+                    logger.info(f"Production base_url: {base_url}")
                 else:
                     base_url = request.host_url.rstrip('/')
+                    logger.info(f"Preview base_url: {base_url}")
 
                 # Validate price ID exists and is active
                 try:
