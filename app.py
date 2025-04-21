@@ -61,7 +61,19 @@ if os.environ.get('PRODUCTION'):
 # Load and validate configuration
 from config import Config
 
+# Initialize with default config for development
+config = Config(
+    PRODUCTION=False,
+    SERVER_NAME=None,
+    SESSION_SECRET='dev_secret_key',
+    STRIPE_SECRET_KEY=None,
+    STRIPE_PUBLISHABLE_KEY=None,
+    DATABASE_URL=None,
+    FLASK_DEBUG=True
+)
+
 try:
+    # Try to load configuration from environment
     config = Config.from_env()
     config.validate()
     logger.info(f"Environment: {'PRODUCTION' if config.PRODUCTION else 'PREVIEW'}")
@@ -69,14 +81,14 @@ try:
     logger.info(f"Stripe configuration present: {bool(config.STRIPE_SECRET_KEY)}")
 
     # Initialize Stripe with error handling
-    stripe.api_key = config.STRIPE_SECRET_KEY
-    if not stripe.api_key:
-        logger.error("Stripe API key is not configured")
-    else:
+    if config.STRIPE_SECRET_KEY:
+        stripe.api_key = config.STRIPE_SECRET_KEY
         logger.info("Stripe API key is configured")
+    else:
+        logger.warning("Stripe API key is not configured")
 except ValueError as e:
     logger.error(f"Configuration error: {str(e)}")
-    if config.PRODUCTION:
+    if os.environ.get('PRODUCTION'):
         raise  # Fail fast in production
     else:
         logger.warning("Continuing in development mode with incomplete configuration")
