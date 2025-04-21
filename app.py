@@ -3,7 +3,12 @@ import logging
 import uuid
 import base64
 import io
+from datetime import datetime, timedelta
 from flask import Flask, request, render_template, send_file, jsonify, flash, redirect, url_for, Response, make_response
+from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_talisman import Talisman
 from werkzeug.utils import secure_filename
 from functools import wraps
 import io
@@ -12,43 +17,123 @@ import stripe
 from models import db, User, Endcard
 from utils.endcard_converter import convert_to_endcard
 
-# Configure detailed logging
-logging.basicConfig(
-    level=logging.DEBUG if os.environ.get('FLASK_DEBUG') else logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s [in %(pathname)s:%(lineno)d]',
-    handlers=[logging.StreamHandler()]
+# Configure detailed logging with custom formatter
+class RequestFormatter(logging.Formatter):
+    def format(self, record):
+        if hasattr(record, 'request_id'):
+            record.request_id = record.request_id
+        else:
+            record.request_id = '-'
+        return super().format(record)
+
+formatter = RequestFormatter(
+    '%(asctime)s [%(levelname)s] [%(request_id)s] '
+    '%(message)s [in %(pathname)s:%(lineno)d]'
 )
+
+# Configure logging handlers
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG if os.environ.get('FLASK_DEBUG') else logging.INFO)
+logger.addHandler(stream_handler)
+
+# Initialize performance monitoring
+from time import time
+from functools import wraps
+
+def log_performance(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        start_time = time()
+        result = f(*args, **kwargs)
+        duration = time() - start_time
+        logger.info(f'Performance: {f.__name__} took {duration:.2f} seconds')
+        return result
+    return wrapper
 
 # Ensure all errors are captured in production
 if os.environ.get('PRODUCTION'):
     logger.setLevel(logging.INFO)
     logging.getLogger('werkzeug').setLevel(logging.INFO)
 
-# Configure server name and environment
-is_production = bool(os.environ.get('PRODUCTION'))
-server_name = os.environ.get('SERVER_NAME')
+# Load and validate configuration
+from config import Config
 
-if is_production and not server_name:
-    logger.warning("PRODUCTION is set but SERVER_NAME is missing")
-    server_name = request.host if request else None
+try:
+    config = Config.from_env()
+    config.validate()
+    logger.info(f"Environment: {'PRODUCTION' if config.PRODUCTION else 'PREVIEW'}")
+    logger.info(f"SERVER_NAME: {config.SERVER_NAME}")
+    logger.info(f"Stripe configuration present: {bool(config.STRIPE_SECRET_KEY)}")
 
-# Log important environment variables and configuration
-logger.info(f"Environment: {'PRODUCTION' if is_production else 'PREVIEW'}")
-logger.info(f"SERVER_NAME: {server_name}")
-logger.info(f"Stripe configuration present: {bool(os.environ.get('STRIPE_SECRET_KEY'))}")
-
-# Initialize Stripe with error handling
-stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
-if not stripe.api_key:
-    logger.error("Stripe API key is not configured")
-else:
-    logger.info("Stripe API key is configured")
+    # Initialize Stripe with error handling
+    stripe.api_key = config.STRIPE_SECRET_KEY
+    if not stripe.api_key:
+        logger.error("Stripe API key is not configured")
+    else:
+        logger.info("Stripe API key is configured")
+except ValueError as e:
+    logger.error(f"Configuration error: {str(e)}")
+    if config.PRODUCTION:
+        raise  # Fail fast in production
+    else:
+        logger.warning("Continuing in development mode with incomplete configuration")
 
 def create_app():
     app = Flask(__name__)
+    
+    # Request tracking middleware
+    @app.before_request
+    def before_request():
+        request.start_time = time()
+        request.request_id = request.headers.get('X-Request-ID') or str(uuid.uuid4())
+        logger.info(f'Request started: {request.method} {request.path}')
+
+    @app.after_request
+    def after_request(response):
+        duration = time() - request.start_time
+        logger.info(
+            f'Request completed: {request.method} {request.path} '
+            f'Status: {response.status_code} Duration: {duration:.2f}s'
+        )
+        response.headers['X-Request-ID'] = request.request_id
+        return response
+
+    # Error tracking
+    @app.errorhandler(Exception)
+    def handle_error(error):
+        logger.error(f'Error occurred: {str(error)}', exc_info=True)
+        return jsonify({
+            'error': str(error),
+            'request_id': getattr(request, 'request_id', None)
+        }), 500
     app.secret_key = os.environ.get("SESSION_SECRET", "dev_secret_key")
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+    # Initialize security extensions
+    Talisman(
+        app,
+        force_https=True,
+        strict_transport_security=True,
+        session_cookie_secure=True,
+        session_cookie_http_only=True
+    )
+
+    # Configure CORS
+    CORS(
+        app,
+        resources={r"/*": {"origins": ["https://endcard-converter.replit.app", "http://localhost:5000", "http://localhost:5001"]}},
+        supports_credentials=True
+    )
+
+    # Initialize rate limiter
+    limiter = Limiter(
+        app=app,
+        key_func=get_remote_address,
+        default_limits=["200 per day", "50 per hour"]
+    )
 
     # Security headers
     @app.after_request
@@ -56,10 +141,23 @@ def create_app():
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
         response.headers['X-XSS-Protection'] = '1; mode=block'
-        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
+        response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
         if os.environ.get('PRODUCTION'):
-            response.headers['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: *.stripe.com *.stripe.network"
+            csp = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.stripe.com *.stripe.network; "
+                "style-src 'self' 'unsafe-inline'; "
+                "img-src 'self' data: https:; "
+                "font-src 'self'; "
+                "frame-src 'self' *.stripe.com *.stripe.network; "
+                "connect-src 'self' *.stripe.com"
+            )
+            response.headers['Content-Security-Policy'] = csp
             response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+            response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+            response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+            response.headers['Cross-Origin-Resource-Policy'] = 'same-site'
         return response
 
     # Configure file upload settings
@@ -535,4 +633,4 @@ def create_app():
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

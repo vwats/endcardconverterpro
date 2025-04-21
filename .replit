@@ -8,7 +8,7 @@ PRODUCTION = "true"
 FLASK_DEBUG = "false"
 
 [deployment]
-run = "gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 180 --log-level debug --error-logfile - --capture-output main:app"
+run = "gunicorn -c gunicorn.conf.py main:app"
 build = ["pip", "install", "-r", "requirements.txt"]
 
 [languages.python]
@@ -32,7 +32,7 @@ args = "pkill gunicorn || true"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
+args = "gunicorn -c gunicorn.conf.py --reload main:app"
 
 [[workflows.workflow]]
 name = "Production Server"
