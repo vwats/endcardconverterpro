@@ -643,3 +643,7 @@ def create_app():
 
 # Create the application instance
 app = create_app()
+
+# When running directly (not through gunicorn), use main.py
+if __name__ == '__main__':
+    import main

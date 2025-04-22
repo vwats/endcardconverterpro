@@ -1,6 +1,5 @@
-
+import os
 import logging
-from app import create_app
 
 # Configure detailed logging
 logging.basicConfig(
@@ -10,6 +9,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Import app after logging configuration
 from app import app
 
 if __name__ == "__main__":
@@ -20,4 +20,5 @@ if __name__ == "__main__":
         app.run(host='0.0.0.0', port=port, debug=debug)
     except Exception as e:
         logger.error(f"Failed to start application: {str(e)}", exc_info=True)
+        raise
     raise
