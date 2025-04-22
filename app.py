@@ -644,6 +644,7 @@ def create_app():
 # Create the application instance
 app = create_app()
 
+# When running directly, defer to main.py
 if __name__ == '__main__':
-    # Application is run from main.py
-    pass
+    from main import run_app
+    run_app(app)
