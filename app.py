@@ -157,13 +157,13 @@ def create_app():
         response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
         if os.environ.get('PRODUCTION'):
             csp = (
-                "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.stripe.com *.stripe.network; "
-                "style-src 'self' 'unsafe-inline'; "
+                "default-src 'self' *.replit.app; "
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.replit.com cdnjs.cloudflare.com *.stripe.com *.stripe.network; "
+                "style-src 'self' 'unsafe-inline' cdn.replit.com cdnjs.cloudflare.com fonts.googleapis.com; "
                 "img-src 'self' data: https:; "
-                "font-src 'self'; "
+                "font-src 'self' fonts.googleapis.com fonts.gstatic.com cdnjs.cloudflare.com; "
                 "frame-src 'self' *.stripe.com *.stripe.network; "
-                "connect-src 'self' *.stripe.com"
+                "connect-src 'self' *.stripe.com *.replit.app"
             )
             response.headers['Content-Security-Policy'] = csp
             response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
