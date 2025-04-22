@@ -641,5 +641,5 @@ def create_app():
 
     return app
 
-# Create the application instance - this is what gunicorn will import
+# Create the Flask application instance
 app = create_app()
