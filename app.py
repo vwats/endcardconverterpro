@@ -641,9 +641,5 @@ def create_app():
 
     return app
 
-# Create the application instance
+# Create the application instance - this is what gunicorn will import
 app = create_app()
-
-# When running directly (not through gunicorn), use main.py
-if __name__ == '__main__':
-    import main
